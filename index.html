@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Visualization based on the Pisa 2012 Dataset by Guillermo Ramirez Camarero</title>
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<style>
+		h2{
+			text-align: center;
+		}
+		*{
+			border: 1px solid red;
+		}
+	</style>
+	<script type="text/javascript">
+	/*
+	var data = d3.tsv("pisa_both.tsv", function(d){
+		return d;
+	})*/
+	"use strict";// ensures no silent errors
+	function draw(data){
+		console.log(data);
+		var margin = 75,
+            width = 1400 - margin,
+            height = 600 - margin;
+
+        d3.select("body")
+            .append ("h2")
+            .text("Pisa 2012 (sampled data)");
+
+        var svg = d3.select("body")
+            .append("svg")
+            .attr("width", width + margin)
+            .attr("height", height + margin)
+            .append('g')
+            .attr('class', 'map');
+	}
+
+	d3.tsv("pisa_both.tsv", draw);
+
+	</script>
+</head>
+<body>
+	<script type="text/javascript"></script>
+
+</body>
+</html>
