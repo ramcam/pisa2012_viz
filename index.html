@@ -2,7 +2,8 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Visualization based on the Pisa 2012 Dataset by Guillermo Ramirez Camarero</title>
+	<title>Visualization based on the Pisa 2012 Dataset by 
+		Guillermo Ramirez Camarero</title>
 	<script src="http://d3js.org/d3.v3.min.js"></script>
 	<style>
 		h2{
@@ -18,24 +19,56 @@
 		return d;
 	})*/
 	"use strict";// ensures no silent errors
+	
 	function draw(data){
-		console.log(data);
+
 		var margin = 75,
             width = 1400 - margin,
-            height = 600 - margin;
+            height = 600 - margin,
+            boxPadding = 5;
 
         d3.select("body")
             .append ("h2")
             .text("Pisa 2012 (sampled data)");
 
+        // we add a svg element where we will draw a box and whiskers plot
+        // we store it in a variable so we can avoid selecting it 
+        // with d3.select("svg")
         var svg = d3.select("body")
             .append("svg")
             .attr("width", width + margin)
             .attr("height", height + margin)
             .append('g')
-            .attr('class', 'map');
+            .attr('class', 'graph');
+
+        // next we select all rectangles (not yet created, so this returns an
+        // empty selection). data() sees there are N values in the dataset, so
+		// it calls enter() N times. enter() returns a placeholder selection for each datapoint that still doesn't have a rectangle appended (all of them)
+		// append() places the rectangles 
+		// clear explanation of this in 
+		// http://alignedleft.com/tutorials/d3/making-a-bar-chart
+		
+        svg.selectAll("rect")
+        	.data(data)
+        	.enter()
+        	.append("rect")
+        	.attr("x", function(d,i){ 
+        		return i * (width / data.length); 
+        	})
+        	.attr("y", 0)
+        	.attr("width", function(d,i){
+        		return width / data.length - boxPadding;
+        	})
+        	.attr("height", 100)
+
+
+
+
 	}
 
+	// what d3.tsv(filename, callback) returns is not the resulting object from
+	// reading the tsv table, but a request which has to be pointed to a 
+	// callback function. without the callback function it will not work!
 	d3.tsv("pisa_both.tsv", draw);
 
 	</script>
