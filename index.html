@@ -53,6 +53,10 @@
         									"#31a354", "#006837"]);
         							/*.range(["#d7191c", "#fdae61", 
         									"#abd9e9", "#2c7bb6"]);*/
+		// we define scale functions for x and y axes.
+		var yScale = d3.scale.linear()
+						.domain([0,1800])
+						.range([height, 0]);
 
         // next we select all rectangles (not yet created, so this returns an
         // empty selection). data() sees there are N values in the dataset, so
@@ -62,28 +66,54 @@
 		// http://alignedleft.com/tutorials/d3/making-a-bar-chart
 		console.log(data);
 
-		
-
-        svg.selectAll("rect")
+        svg.selectAll("rect.box")
         	.data(data)
         	.enter()
         	.append("rect")
         	.attr("x", function(d,i){ 
         		return i * (width / data.length); 
         	})
-        	.attr("y", function(d){
-        		return height - d["q75"]*0.4;
+        	.attr("y", function (d){
+        		return yScale(d["q75"]);
         		})
         	.attr("width", boxWidth)
         	.attr("height", function(d){
-        		return (d["q75"]-d["q25"])*0.4;
+        		return Math.abs(yScale(d["q75"])-yScale(d["q25"]));
         	}
         	).attr("fill", function(d){
         		return quantile_group_to_color(d["mean_quantiles"]);
-        	});
+        	})
+        	.attr("class", "box");
+
+
+        svg.selectAll("line.whisker")
+        	.data(data)
+        	.enter()
+        	.append("line")
+        	.attr("x1", function(d,i){
+        		return i * (width / data.length) + boxWidth/2;
+        	})
+        	.attr("y1", function(d){
+        		return yScale(d["bottom"]);
+        	})
+        	.attr("x2", function(d,i){
+        		return i * (width / data.length) + boxWidth/2;
+        	})
+        	.attr("y2", function(d){
+        		return yScale(d["top"]);
+        	})
+        	.attr("stroke-width", 1)
+        	.attr("stroke", function(d){
+        		return quantile_group_to_color(d["mean_quantiles"]);
+        	})
+        	.attr("class", "whisker");
 
        	// we use the same to draw and bind the lines
-        svg.selectAll("line")
+       	// note how we have to refer to line.median to avoid confusion
+       	// with the already drawn line.whisker !
+       	// we refer to line.median even though we don't assing the class name
+       	// until the end of the chain in .attr("class", "median")
+        svg.selectAll("line.median")
         	.data(data)
         	.enter()
         	.append("line")
@@ -91,17 +121,20 @@
         		return i * (width / data.length) + medianLinePadding;
         	})
         	.attr("y1", function(d){
-        		return height - d["q50"]*0.4;
+        		return yScale(d["q50"]);
         	})
         	.attr("x2", function(d,i){
         		return i * (width / data.length) 
         				+ boxWidth - medianLinePadding;
         	})
         	.attr("y2", function(d){
-        		return height - d["q50"]*0.4;
+        		return yScale(d["q50"]);
         	})
         	.attr("stroke-width", 1)
-        	.attr("stroke", "white");
+        	.attr("stroke", "white")
+        	.attr("class", "median");
+        // could we make a function to draw a boxplot object
+        // which would be bound to several values?
 
 
 
