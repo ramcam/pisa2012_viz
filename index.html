@@ -16,11 +16,13 @@
 			fill : #000;
 			font-size: 8px;
 		}
+		.countryName{
+			font-size: 14px;
+		}
 		.quantiles{
 			stroke: #BBB;
 			stroke-width: 1;
 			stroke-dasharray: 2;
-
 		}
 	</style>
 	<script type="text/javascript">
@@ -33,7 +35,7 @@
 	function draw(data){
 
 		var margin = 75,
-            width = 1400 - margin,
+            width = 1490 - margin,
             height = 600 - margin,
             boxPadding = 10,
             boxWidth = width / data.length - boxPadding,
@@ -66,7 +68,7 @@
         									"#abd9e9", "#2c7bb6"]);*/
 		// we define scale functions for the y axis.
 		var yScale = d3.scale.linear()
-						.domain([0,1800])
+						.domain([200,1800])
 						.range([height, 0]);
 
 		// we draw horizontal lines for q10, q25, q50 and q75, q90 of the whole dataset
@@ -253,6 +255,29 @@
         		return integerFormat(d["bottom"]);
         	})
         	.attr("class", "bottom");
+
+        svg.selectAll("text.countryName")
+        	.data(data)
+        	.enter()
+        	.append("text")
+        	.attr("x", function (d,i){
+        		return i* (width / data.length) + 0.7*boxWidth;
+        	})
+        	.attr("y", height - 20)
+        	.text(function (d){
+        		return d["country_code"];
+        	})
+        	.attr("text-anchor", "end")
+        	.attr("transform", function (d,i){
+        		//return "rotate(2,100,"+(height-20)+")";
+        		
+        		return "rotate(-90," +
+        				(i*(width / data.length) + 0.7*boxWidth) + 
+        				"," + 
+        				(height - 20) +
+        				")";
+        	})
+        	.attr("class", "countryName");
         // could we make a function to draw a boxplot object
         // which would be bound to several values?
 
