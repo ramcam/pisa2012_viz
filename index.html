@@ -12,6 +12,16 @@
 		*{
 			border: 1px solid red;
 		}
+		text{
+			fill : #000;
+			font-size: 8px;
+		}
+		.quantiles{
+			stroke: #BBB;
+			stroke-width: 1;
+			stroke-dasharray: 2;
+
+		}
 	</style>
 	<script type="text/javascript">
 	/*
@@ -25,9 +35,10 @@
 		var margin = 75,
             width = 1400 - margin,
             height = 600 - margin,
-            boxPadding = 5,
+            boxPadding = 10,
             boxWidth = width / data.length - boxPadding,
             medianLinePadding = 2;
+        var integerFormat = d3.format(".0f");
 
         d3.select("body")
             .append ("h2")
@@ -53,10 +64,44 @@
         									"#31a354", "#006837"]);
         							/*.range(["#d7191c", "#fdae61", 
         									"#abd9e9", "#2c7bb6"]);*/
-		// we define scale functions for x and y axes.
+		// we define scale functions for the y axis.
 		var yScale = d3.scale.linear()
 						.domain([0,1800])
 						.range([height, 0]);
+
+		// we draw horizontal lines for q10, q25, q50 and q75, q90 of the whole dataset
+		// the values come from R
+		var yQuantiles = [{
+								"val" : 692.0664,
+								"quantile" : 0.1
+							},{	
+								"val": 804.4097,
+								"quantile": 0.25
+							},{	
+								"val": 941.5230,
+								"quantile": 0.5
+							},{	
+								"val": 1080.3378,
+								"quantile": 0.75
+							},{	
+								"val": 1195.2561,
+								"quantile": 0.9
+							}];
+
+		svg.selectAll("line.quantiles")
+			.data(yQuantiles)
+			.enter()
+			.append("line")
+			.attr("x1", 0)
+			.attr("y1", function (d){
+				return yScale(d["val"]);
+			})
+			.attr("x2", width)
+			.attr("y2", function (d){
+				return yScale(d["val"]);
+			})
+			.attr("class", "quantiles")
+
 
         // next we select all rectangles (not yet created, so this returns an
         // empty selection). data() sees there are N values in the dataset, so
@@ -70,17 +115,17 @@
         	.data(data)
         	.enter()
         	.append("rect")
-        	.attr("x", function(d,i){ 
+        	.attr("x", function (d,i){ 
         		return i * (width / data.length); 
         	})
         	.attr("y", function (d){
         		return yScale(d["q75"]);
         		})
         	.attr("width", boxWidth)
-        	.attr("height", function(d){
+        	.attr("height", function (d){
         		return Math.abs(yScale(d["q75"])-yScale(d["q25"]));
         	}
-        	).attr("fill", function(d){
+        	).attr("fill", function (d){
         		return quantile_group_to_color(d["mean_quantiles"]);
         	})
         	.attr("class", "box");
@@ -90,20 +135,20 @@
         	.data(data)
         	.enter()
         	.append("line")
-        	.attr("x1", function(d,i){
+        	.attr("x1", function (d,i){
         		return i * (width / data.length) + boxWidth/2;
         	})
-        	.attr("y1", function(d){
+        	.attr("y1", function (d){
         		return yScale(d["bottom"]);
         	})
-        	.attr("x2", function(d,i){
+        	.attr("x2", function (d,i){
         		return i * (width / data.length) + boxWidth/2;
         	})
-        	.attr("y2", function(d){
+        	.attr("y2", function (d){
         		return yScale(d["top"]);
         	})
         	.attr("stroke-width", 1)
-        	.attr("stroke", function(d){
+        	.attr("stroke", function (d){
         		return quantile_group_to_color(d["mean_quantiles"]);
         	})
         	.attr("class", "whisker");
@@ -117,22 +162,97 @@
         	.data(data)
         	.enter()
         	.append("line")
-        	.attr("x1", function(d,i){
+        	.attr("x1", function (d,i){
         		return i * (width / data.length) + medianLinePadding;
         	})
-        	.attr("y1", function(d){
+        	.attr("y1", function (d){
         		return yScale(d["q50"]);
         	})
-        	.attr("x2", function(d,i){
+        	.attr("x2", function (d,i){
         		return i * (width / data.length) 
         				+ boxWidth - medianLinePadding;
         	})
-        	.attr("y2", function(d){
+        	.attr("y2", function (d){
         		return yScale(d["q50"]);
         	})
         	.attr("stroke-width", 1)
         	.attr("stroke", "white")
         	.attr("class", "median");
+
+        svg.selectAll("text.top")
+        	.data(data)
+        	.enter()
+        	.append("text")
+        	.attr("x", function (d,i){
+        		return i * (width / data.length) + boxWidth;
+        	})
+        	.attr("y", function (d){
+        		return yScale(d["top"]);
+        	})
+        	.text(function(d){
+        		return integerFormat(d["top"]);
+        	})
+        	.attr("class", "top");
+
+        svg.selectAll("text.q75")
+        	.data(data)
+        	.enter()
+        	.append("text")
+        	.attr("x", function (d,i){
+        		return i * (width / data.length) + boxWidth;
+        	})
+        	.attr("y", function (d){
+        		return yScale(d["q75"]);
+        	})
+        	.text(function(d){
+        		return integerFormat(d["q75"]);
+        	})
+        	.attr("class", "q75");
+
+        svg.selectAll("text.q50")
+        	.data(data)
+        	.enter()
+        	.append("text")
+        	.attr("x", function (d,i){
+        		return i * (width / data.length) + boxWidth;
+        	})
+        	.attr("y", function (d){
+        		return yScale(d["q50"]);
+        	})
+        	.text(function(d){
+        		return integerFormat(d["q50"]);
+        	})
+        	.attr("class", "q50");
+
+        svg.selectAll("text.q25")
+        	.data(data)
+        	.enter()
+        	.append("text")
+        	.attr("x", function (d,i){
+        		return i * (width / data.length) + boxWidth;
+        	})
+        	.attr("y", function (d){
+        		return yScale(d["q25"]);
+        	})
+        	.text(function(d){
+        		return integerFormat(d["q25"]);
+        	})
+        	.attr("class", "q25");
+
+        svg.selectAll("text.bottom")
+        	.data(data)
+        	.enter()
+        	.append("text")
+        	.attr("x", function (d,i){
+        		return i * (width / data.length) + boxWidth;
+        	})
+        	.attr("y", function (d){
+        		return yScale(d["bottom"]);
+        	})
+        	.text(function(d){
+        		return integerFormat(d["bottom"]);
+        	})
+        	.attr("class", "bottom");
         // could we make a function to draw a boxplot object
         // which would be bound to several values?
 
