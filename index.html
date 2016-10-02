@@ -9,9 +9,9 @@
 		h2{
 			text-align: center;
 		}
-		*{
+		/**{
 			border: 1px solid red;
-		}
+		}*/
 		text{
 			fill : #000;
 			font-size: 8px;
@@ -26,10 +26,7 @@
 		}
 	</style>
 	<script type="text/javascript">
-	/*
-	var data = d3.tsv("pisa_both.tsv", function(d){
-		return d;
-	})*/
+
 	"use strict";// ensures no silent errors
 	
 	function draw(data){
@@ -104,7 +101,6 @@
 			})
 			.attr("class", "quantiles")
 
-
         // next we select all rectangles (not yet created, so this returns an
         // empty selection). data() sees there are N values in the dataset, so
 		// it calls enter() N times. enter() returns a placeholder selection for each datapoint that still doesn't have a rectangle appended (all of them)
@@ -112,6 +108,12 @@
 		// clear explanation of this by Scott Murray in: 
 		// http://alignedleft.com/tutorials/d3/making-a-bar-chart
 		console.log(data);
+
+        // sort the data before binding
+        data.sort(function(a,b){
+            return parseFloat(a["mean"])- parseFloat(b["mean"]);
+        })
+        debugger;////////////////////AQUIIIIII me quede intentando hacer sort!
 
         svg.selectAll("rect.box")
         	.data(data)
@@ -280,6 +282,7 @@
         	.attr("class", "countryName");
         // could we make a function to draw a boxplot object
         // which would be bound to several values?
+
 
 
 
