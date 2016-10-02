@@ -28,7 +28,8 @@
 	<script type="text/javascript">
 
 	"use strict";// ensures no silent errors
-	
+
+
 	function draw(data){
 
 		var margin = 75,
@@ -120,19 +121,20 @@
         // since the data is divergent. For this purpose I have added a function
         // diff_abs which measures the absolute difference regardless of gender.
         // lower absolute differences appear to the right when plotted.
-        var sortKey = "diff_abs";
+        
+        var sortKey = "mean";
         var sorter = {
             "mean" : (function (a,b){
-                    return parseFloat(a["mean"]) - 
-                           parseFloat(b["mean"]);
+                    return parseFloat(a["mean_ranking"]) - 
+                           parseFloat(b["mean_ranking"]);
                 }),
             "math" : (function (a,b){
-                    return parseFloat(b["math_ranking"]) -
-                           parseFloat(a["math_ranking"]);
+                    return parseFloat(a["math_ranking"]) -
+                           parseFloat(b["math_ranking"]);
                 }),
             "read" : (function (a,b){
-                    return parseFloat(b["read_ranking"]) - 
-                           parseFloat(a["read_ranking"]);
+                    return parseFloat(a["read_ranking"]) - 
+                           parseFloat(b["read_ranking"]);
                 }),
             "mean_female" : (function (a,b){
                     return parseFloat(b["female_ranking"]) - 
@@ -157,14 +159,14 @@
         }
         //pairs the sorting keyword with the column name in the dataset
         var sortMap = {
-            "mean" : "mean",
-            "math" : "mean_math",
-            "read" : "mean_read",
+            "mean" : "mean_ranking",
+            "math" : "math_ranking",
+            "read" : "read_ranking",
             "mean_female" : "female_ranking",
             "mean_male" : "male_ranking",
-            "sd" : "sd",
-            "diff_abs" : "mean_diff",
-            "diff" : "mean_diff"
+            "sd" : "sd_ranking",
+            "diff_abs" : "abs_diff_ranking",
+            "diff" : "diff_ranking"
         }
 
         data.sort(sorter[sortKey]);
@@ -342,7 +344,7 @@
             })
             .attr("y", height - 30)
             .text(function (d){
-                return integerFormat(d[sortMap[sortKey]]);
+                return integerFormat(d[sortKey]);
             })
             .attr("transform", function (d,i){
                 return "rotate(-90," +
@@ -353,11 +355,69 @@
             })
             .attr("class", "sortValue");
         // could we make a function to draw a boxplot object
-        // which would be bound to several values?
 
+        // we add some buttons that allow us to change the sorting
+        var buttons = d3.select("body")
+                        .append("div")
+                        .attr("class", "sortButton")
+                        .selectAll("div")
+                        .data(Object.keys(sortMap))
+                        .enter()
+                        .append("div")
+                        .text(function (d){
+                            return d;
+                        });
 
+        buttons.on("click", function (d){
+            d3.select(".sortButton")
+                .selectAll("div")
+                .transition()
+                .duration(500)
+                .style("color", "black");
+            d3.select(this)
+                .transition()
+                .duration(500)
+                .style("background", "lightblue")
+                .style("color", "white");
+            var clickedName = this.innerHTML;
 
-
+            // transitions for all elements
+            d3.selectAll(".box")
+                .transition()
+                .duration(2000)
+                .attr("x", function (d){
+                    return xScale(d[sortMap[clickedName]]-1);
+                });
+            d3.selectAll(".whisker")
+                .transition()
+                .duration(2000)
+                .attr("x1", function (d){
+                    return xScale(d[sortMap[clickedName]]-1) + boxWidth/2;
+                })
+                .attr("x2", function (d){
+                    return xScale(d[sortMap[clickedName]]-1) + boxWidth/2;
+                });
+            d3.selectAll(".median")
+                .transition()
+                .duration(2000)
+                .attr("x1", function (d){
+                    return xScale(d[sortMap[clickedName]]-1) 
+                        + medianLinePadding;
+                })
+                .attr("x2", function (d){
+                    return xScale(d[sortMap[clickedName]]-1) 
+                        + boxWidth - medianLinePadding;
+                });
+            d3.selectAll(".countryName")
+                .transition()
+                .duration(2000)
+                .attr("x", function (d){
+                    return xScale(d[sortMap[clickedName]]-1) + 0.7*boxWidth;
+                });
+        });
+        // show numbers when hover, and grey lines to compare
+        // highlight country name
+        // highlight color when clicked? or slight grey background?
 	}
 
 	// what d3.tsv(filename, callback) returns is not the resulting object from
