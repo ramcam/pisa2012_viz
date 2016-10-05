@@ -24,6 +24,12 @@
 			stroke-width: 1;
 			stroke-dasharray: 2;
 		}
+        .box:hover {
+            /*fill: red;*/
+        }
+        .whisker{
+            /*shape-rendering: crispEdges;*/
+        }
 	</style>
 	<script type="text/javascript">
 
@@ -188,7 +194,12 @@
         	).attr("fill", function (d){
         		return quantileColor(d["mean_quantiles"]);
         	})
-        	.attr("class", "box");
+        	.attr("class", "box")
+            .attr("ID", function (d, i){
+                return i;
+            })
+            .on("mouseover", handleMouseOver)
+            .on("mouseout", handleMouseOut);
 
 
         svg.selectAll("line.whisker")
@@ -413,11 +424,46 @@
                 .duration(2000)
                 .attr("x", function (d){
                     return xScale(d[sortMap[clickedName]]-1) + 0.7*boxWidth;
+                })
+                // this transformation rotates again the coordinate system
+                .attr("transform", function (d,i){
+                    return "rotate(-90," +
+                        (xScale(d[sortMap[clickedName]]-1) + 0.7*boxWidth) + 
+                        "," + 
+                        (height - 20) +
+                        ")";
                 });
+
+            
         });
+        
+        // trying to change the properties of a clicked element
+        // search for "d3 tooltips"
+        // see this example! http://bl.ocks.org/Caged/6476579
+        var rects = d3.selectAll(".box");
+        rects.on("click", function (d){
+            d3.select("#"+this.getAttribute("ID"))
+            .style("fill", "red");
+        });
+
         // show numbers when hover, and grey lines to compare
         // highlight country name
         // highlight color when clicked? or slight grey background?
+        // mouse events with d3 example:
+        // http://bl.ocks.org/WilliamQLiu/76ae20060e19bf42d774
+
+        // mouse event handling functions
+            var handleMouseOver = function (d, i) {
+                d3.select(this).attr({
+                    fill: "orange"
+                });
+            }
+
+            var handleMouseOut = function (d, i) {
+                d3.select(this).attr({
+                    fill: "grey"
+                });
+            }
 	}
 
 	// what d3.tsv(filename, callback) returns is not the resulting object from
