@@ -45,6 +45,7 @@
             boxWidth = width / data.length - boxPadding,
             medianLinePadding = 2;
         var integerFormat = d3.format(".0f");
+        var highlightColor = "#e34a33";
 
         d3.select("body")
             .append ("h2")
@@ -177,6 +178,30 @@
 
         data.sort(sorter[sortKey]);
 
+        svg.selectAll("line.whisker")
+            .data(data)
+            .enter()
+            .append("line")
+            .attr("x1", function (d,i){
+                return xScale(i) + boxWidth/2;
+            })
+            .attr("y1", function (d){
+                return yScale(d["bottom"]);
+            })
+            .attr("x2", function (d,i){
+                return xScale(i) + boxWidth/2;
+            })
+            .attr("y2", function (d){
+                return yScale(d["top"]);
+            })
+            .attr("stroke-width", 1)
+            .attr("stroke", function (d){
+                return quantileColor(d["mean_quantiles"]);
+            })
+            .attr("class", function (d, i){
+                return "whisker c" + i;
+            });
+
         svg.selectAll("rect.box")
         	.data(data)
         	.enter()
@@ -194,7 +219,11 @@
         	).attr("fill", function (d){
         		return quantileColor(d["mean_quantiles"]);
         	})
-        	.attr("class", "box")
+            .attr("class", function (d, i){
+                // two classes, one for type of element, another for number
+                // of element
+                return "box c"+i; 
+            })
             .attr("ID", function (d, i){
                 return i;
             })
@@ -202,27 +231,7 @@
             .on("mouseout", handleMouseOut);
 
 
-        svg.selectAll("line.whisker")
-        	.data(data)
-        	.enter()
-        	.append("line")
-        	.attr("x1", function (d,i){
-                return xScale(i) + boxWidth/2;
-        	})
-        	.attr("y1", function (d){
-        		return yScale(d["bottom"]);
-        	})
-        	.attr("x2", function (d,i){
-        		return xScale(i) + boxWidth/2;
-        	})
-        	.attr("y2", function (d){
-        		return yScale(d["top"]);
-        	})
-        	.attr("stroke-width", 1)
-        	.attr("stroke", function (d){
-        		return quantileColor(d["mean_quantiles"]);
-        	})
-        	.attr("class", "whisker");
+
 
        	// we use the same to draw and bind the lines
        	// note how we have to refer to line.median to avoid confusion
@@ -248,8 +257,10 @@
         	})
         	.attr("stroke-width", 1)
         	.attr("stroke", "white")
-        	.attr("class", "median");
-
+        	.attr("class", function (d,i){
+                return "median c" + i;
+            });
+        /*
         svg.selectAll("text.top")
         	.data(data)
         	.enter()
@@ -324,6 +335,7 @@
         		return integerFormat(d["bottom"]);
         	})
         	.attr("class", "bottom");
+            */
 
         svg.selectAll("text.countryName")
         	.data(data)
@@ -344,7 +356,9 @@
         				(height - 20) +
         				")";
         	})
-        	.attr("class", "countryName");
+        	.attr("class", function (d,i){
+                return "countryName c" + i;
+            });
 
         svg.selectAll("text.sortValue")
             .data(data)
@@ -453,16 +467,70 @@
         // http://bl.ocks.org/WilliamQLiu/76ae20060e19bf42d774
 
         // mouse event handling functions
-            var handleMouseOver = function (d, i) {
-                d3.select(this).attr({
-                    fill: "orange"
-                });
+            function handleMouseOver (d, i) {
+                d3.select(this).attr("fill", highlightColor);
+                var classString = ".c" + this.getAttribute("ID");
+                d3.select(".whisker" + classString)
+                    .attr("stroke", highlightColor)
+                    .attr("stroke-width", 2);
+                d3.select(".countryName" + classString)
+                    .attr("font-weight", "bold");
+
+                //add text labels BUG WITH TEXT POSITION!!!!!
+                svg.append("text")
+                    .attr("x", function(){return xScale(i) + boxWidth;})
+                    .attr("y", function(){return yScale(d["top"]);})
+                    .text(function(){
+                        return integerFormat(d["top"]);
+                    })
+                    .attr("class", "top");
+
+                svg.append("text")
+                    .attr("x", function(){return xScale(i) + boxWidth;})
+                    .attr("y", function(){return yScale(d["q75"]);})
+                    .text(function(){
+                        return integerFormat(d["q75"]);
+                    })
+                    .attr("class", "q75");
+
+                svg.append("text")
+                    .attr("x", function(){return xScale(i) + boxWidth;})
+                    .attr("y", function(){return yScale(d["q50"]);})
+                    .text(function(){
+                        return integerFormat(d["q50"]);
+                    })
+                    .attr("class", "q50");
+
+                svg.append("text")
+                    .attr("x", function(){return xScale(i) + boxWidth;})
+                    .attr("y", function(){return yScale(d["q25"]);})
+                    .text(function(){
+                        return integerFormat(d["q25"]);
+                    })
+                    .attr("class", "q25");
+
+                svg.append("text")
+                    .attr("x", function(){return xScale(i) + boxWidth;})
+                    .attr("y", function(){return yScale(d["bottom"]);})
+                    .text(function(){
+                        return integerFormat(d["bottom"]);
+                    })
+                    .attr("class", "bottom");
+
+
+
             }
 
-            var handleMouseOut = function (d, i) {
-                d3.select(this).attr({
-                    fill: "grey"
-                });
+            function handleMouseOut (d, i) {
+                var classString = ".c" + this.getAttribute("ID");
+                d3.select(this).attr("fill", quantileColor(d["mean_quantiles"]));
+                d3.select(".whisker" + classString)
+                    .attr("stroke", quantileColor(d["mean_quantiles"]))
+                    .attr("stroke-width", 1);
+                d3.select(".countryName" + classString)
+                    .attr("font-weight", "normal");
+                //remove text labels
+                d3.selectAll(".top,.q75,.q50,.q25,.bottom").remove();
             }
 	}
 
