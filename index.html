@@ -260,7 +260,7 @@
         	.attr("class", function (d,i){
                 return "median c" + i;
             });
-        /*
+        
         svg.selectAll("text.top")
         	.data(data)
         	.enter()
@@ -274,8 +274,11 @@
         	.text(function(d){
         		return integerFormat(d["top"]);
         	})
-        	.attr("class", "top");
-
+        	.attr("class", function (d,i){
+                return "top c" + i;
+            })
+            .attr("visibility", "hidden");
+        
         svg.selectAll("text.q75")
         	.data(data)
         	.enter()
@@ -289,8 +292,11 @@
         	.text(function(d){
         		return integerFormat(d["q75"]);
         	})
-        	.attr("class", "q75");
-
+            .attr("class", function (d,i){
+                return "q75 c" + i;
+            })
+            .attr("visibility", "hidden");
+        
         svg.selectAll("text.q50")
         	.data(data)
         	.enter()
@@ -304,8 +310,11 @@
         	.text(function(d){
         		return integerFormat(d["q50"]);
         	})
-        	.attr("class", "q50");
-
+            .attr("class", function (d,i){
+                return "q50 c" + i;
+            })
+            .attr("visibility", "hidden");
+        
         svg.selectAll("text.q25")
         	.data(data)
         	.enter()
@@ -319,8 +328,11 @@
         	.text(function(d){
         		return integerFormat(d["q25"]);
         	})
-        	.attr("class", "q25");
-
+            .attr("class", function (d,i){
+                return "q25 c" + i;
+            })
+            .attr("visibility", "hidden");
+        
         svg.selectAll("text.bottom")
         	.data(data)
         	.enter()
@@ -334,8 +346,11 @@
         	.text(function(d){
         		return integerFormat(d["bottom"]);
         	})
-        	.attr("class", "bottom");
-            */
+            .attr("class", function (d,i){
+                return "bottom c" + i;
+            })
+            .attr("visibility", "hidden");
+            
 
         svg.selectAll("text.countryName")
         	.data(data)
@@ -379,7 +394,6 @@
                         ")";
             })
             .attr("class", "sortValue");
-        // could we make a function to draw a boxplot object
 
         // we add some buttons that allow us to change the sorting
         var buttons = d3.select("body")
@@ -447,8 +461,12 @@
                         (height - 20) +
                         ")";
                 });
-
-            
+            d3.selectAll(".top,.q75,.q50,.q25,.bottom")
+                .transition()
+                .duration(2000)
+                .attr("x", function (d){
+                    return xScale(d[sortMap[clickedName]]-1) + boxWidth;
+                })
         });
         
         // trying to change the properties of a clicked element
@@ -476,7 +494,15 @@
                 d3.select(".countryName" + classString)
                     .attr("font-weight", "bold");
 
-                //add text labels BUG WITH TEXT POSITION!!!!!
+                //add text labels BUG WITH TEXT POSITION!!!!
+                //maybe draw the text elements as before, then use the css visibility
+                //property to show them momentarily.
+                d3.select(".top" + classString).attr("visibility", "visible");
+                d3.select(".q75" + classString).attr("visibility", "visible");
+                d3.select(".q50" + classString).attr("visibility", "visible");
+                d3.select(".q25" + classString).attr("visibility", "visible");
+                d3.select(".bottom" + classString).attr("visibility", "visible");
+                /*
                 svg.append("text")
                     .attr("x", function(){return xScale(i) + boxWidth;})
                     .attr("y", function(){return yScale(d["top"]);})
@@ -515,7 +541,7 @@
                     .text(function(){
                         return integerFormat(d["bottom"]);
                     })
-                    .attr("class", "bottom");
+                    .attr("class", "bottom");*/
 
 
 
@@ -529,8 +555,9 @@
                     .attr("stroke-width", 1);
                 d3.select(".countryName" + classString)
                     .attr("font-weight", "normal");
-                //remove text labels
-                d3.selectAll(".top,.q75,.q50,.q25,.bottom").remove();
+                //remove text labels. comma notations means .top OR .q75 OR ...
+                d3.selectAll(".top,.q75,.q50,.q25,.bottom")
+                    .attr("visibility", "hidden");
             }
 	}
 
