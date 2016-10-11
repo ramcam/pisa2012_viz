@@ -409,7 +409,7 @@
         	.attr("x", function (d,i){
         		return xScale(i) + 0.7*boxWidth;
         	})
-        	.attr("y", height - 20)
+        	.attr("y", height + 20)
         	.text(function (d){
         		return d["country_code"];
         	})
@@ -418,7 +418,7 @@
         		return "rotate(-90," +
         				(xScale(i) + 0.7*boxWidth) + 
         				"," + 
-        				(height - 20) +
+        				(height + 20) +
         				")";
         	})
         	.attr("class", function (d,i){
@@ -432,7 +432,7 @@
             .attr("x", function (d,i){
                 return xScale(i) + 0.7*boxWidth;
             })
-            .attr("y", height - 30)
+            .attr("y", height + 15)
             .text(function (d){
                 return integerFormat(d[sortKey]);
             })
@@ -440,7 +440,7 @@
                 return "rotate(-90," +
                         (xScale(i) + 0.7*boxWidth) + 
                         "," + 
-                        (height - 30) +
+                        (height + 15) +
                         ")";
             })
             .attr("class", "sortValue");
@@ -508,7 +508,7 @@
                     return "rotate(-90," +
                         (xScale(d[sortMap[clickedName]]-1) + 0.7*boxWidth) + 
                         "," + 
-                        (height - 20) +
+                        (height + 20) +
                         ")";
                 });
             d3.selectAll(".top,.q75,.q50,.q25,.bottom")
@@ -528,7 +528,7 @@
                     return "rotate(-90," +
                         (xScale(d[sortMap[clickedName]]-1) + 0.7*boxWidth) + 
                         "," + 
-                        (height - 30) +
+                        (height + 15) +
                         ")";
                 })
                 .text(function (d){
