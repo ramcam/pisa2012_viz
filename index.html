@@ -39,9 +39,9 @@
 	function draw(data){
 
 		var margin = 75,
-            width = 1490 - margin,
+            width = 1000 - margin,
             height = 600 - margin,
-            boxPadding = 10,
+            boxPadding = 5,
             boxWidth = width / data.length - boxPadding,
             medianLinePadding = 2;
         var integerFormat = d3.format(".0f");
@@ -71,13 +71,22 @@
         									"#31a354", "#006837"]);
         							/*.range(["#d7191c", "#fdae61", 
         									"#abd9e9", "#2c7bb6"]);*/
-		// we define scale functions for the y axis.
+		// we define scale functions for the x and y axis.
         var xScale = d3.scale.linear()
                         .domain([0, data.length])
                         .range([0, width]);
 		var yScale = d3.scale.linear()
 						.domain([200,1800])
 						.range([height, 0]);
+
+        // http://alignedleft.com/tutorials/d3/axes
+        // as explained in the link, g defines a group for the elements after
+        // and call() hands off a selection to any function
+        var yAxis = d3.svg.axis()
+                  .scale(yScale)
+                  .orient("bottom");
+
+        svg.append("g").call(yAxis);
 
 		// we draw horizontal lines for q10, q25, q50 and q75, q90 of the whole dataset
 		// the values come from R
@@ -164,7 +173,11 @@
                            parseFloat(b["diff_ranking"]);
                 })
         }
-        //pairs the sorting keyword with the column name in the dataset
+        // for each feature there are two types of columns in the dataset: 
+        // ones that contain the values, and others which only contain a 
+        // precalculated ranking position
+
+        // pairs the sorting keyword with the ranking column name in the dataset
         var sortMap = {
             "mean" : "mean_ranking",
             "math" : "math_ranking",
@@ -174,6 +187,19 @@
             "sd" : "sd_ranking",
             "diff_abs" : "abs_diff_ranking",
             "diff" : "diff_ranking"
+        }
+
+        //pairs the sorting keyword with the value column name in the dataset
+        //i am missing columns for male and female mean data
+        var sortMap2 = {
+            "mean" : "mean",
+            "math" : "mean_math",
+            "read" : "mean_read",
+            "mean_female" : "female_ranking",
+            "mean_male" : "male_ranking",
+            "sd" : "sd",
+            "diff_abs" : "mean_diff",
+            "diff" : "mean_diff"
         }
 
         data.sort(sorter[sortKey]);
@@ -467,16 +493,29 @@
                 .attr("x", function (d){
                     return xScale(d[sortMap[clickedName]]-1) + boxWidth;
                 })
+
+            d3.selectAll(".sortValue")
+                .transition()
+                .duration(2000)
+                .attr("x", function (d){
+                    return xScale(d[sortMap[clickedName]]-1) + 0.7*boxWidth;
+                })
+                .attr("transform", function (d,i){
+                    return "rotate(-90," +
+                        (xScale(d[sortMap[clickedName]]-1) + 0.7*boxWidth) + 
+                        "," + 
+                        (height - 30) +
+                        ")";
+                })
+                .text(function (d){
+                    return integerFormat(d[sortMap2[clickedName]]);
+                });
+
         });
         
         // trying to change the properties of a clicked element
         // search for "d3 tooltips"
         // see this example! http://bl.ocks.org/Caged/6476579
-        var rects = d3.selectAll(".box");
-        rects.on("click", function (d){
-            d3.select("#"+this.getAttribute("ID"))
-            .style("fill", "red");
-        });
 
         // show numbers when hover, and grey lines to compare
         // highlight country name
@@ -494,9 +533,6 @@
                 d3.select(".countryName" + classString)
                     .attr("font-weight", "bold");
 
-                //add text labels BUG WITH TEXT POSITION!!!!
-                //maybe draw the text elements as before, then use the css visibility
-                //property to show them momentarily.
                 d3.select(".top" + classString).attr("visibility", "visible");
                 d3.select(".q75" + classString).attr("visibility", "visible");
                 d3.select(".q50" + classString).attr("visibility", "visible");
