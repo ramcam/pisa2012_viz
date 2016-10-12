@@ -43,6 +43,13 @@
             font-family: sans-serif;
             font-size: 8px;
         }
+        .flex-container{
+            display: -webkit-flex;
+            display: flex;
+        }
+        .graph{
+            float: left;
+        }
 	</style>
 	<script type="text/javascript">
 
@@ -58,6 +65,7 @@
             medianLinePadding = 2;
         var integerFormat = d3.format(".0f");
         var highlightColor = "#e34a33";
+        var discreteColor = "#EEE"
 
         d3.select("body")
             .append ("h2")
@@ -66,12 +74,13 @@
         // we add a svg element where we will draw a box and whiskers plot
         // we store it in a variable so we can avoid selecting it 
         // with d3.select("svg")
-        var svg = d3.select("body")
+        var mainDiv = d3.select("body").append("div").attr("class", "flex-container");
+        var svg = d3.select("div.flex-container")
             .append("svg")
             .attr("width", width + margin)
             .attr("height", height + 3*margin)
             .append('g')
-            .attr('class', 'graph')
+            .attr('class', 'graph flex-item')
             .attr("transform", "translate(50,0)"); // adjust the position
 
         // we define an ordinal scale:
@@ -100,8 +109,38 @@
                   .scale(yScale)
                   .orient("left");
 
-        // ADD MINI-MAP!!!!!!!!!!!
+        // ADD MINI-MAP!
+        var mapWidth = 400;
+        var mapHeight = 260;
+        var map = d3.select(".flex-container")
+                        .append("svg")
+                        .attr("width", mapWidth)
+                        .attr("height", mapHeight)
+                        .attr("class", "worldmap flex-item");
 
+        d3.json("world_countries.json", function(error, world){
+            if (error) return console.error(error);
+            console.log(world);
+            var projection = d3.geo.mercator()
+                                .scale(60)
+                                .translate([175, 190]);
+            var path = d3.geo.path().projection(projection);
+            map.selectAll("path")
+                      .data(world.features)
+                      .enter()
+                      .append("path")
+                      .attr("d", path)
+                      .style("fill", discreteColor)
+                      .style("stroke", "white")
+                      .style("stroke-width", 0.5)
+                      .on("mouseover", function (d){
+                        d3.select(this).style("fill", highlightColor);
+                      })
+                      .on("mouseout", function (d){
+                        d3.select(this).style("fill", discreteColor);
+                      });
+        });
+        // Add y axis 
         svg.append("g")
             .attr("class","axis")
             .attr("transform", "translate(" + "-10" + ",0)")
@@ -605,7 +644,9 @@
 	</script>
 </head>
 <body>
-	<script type="text/javascript"></script>
+	<script type="text/javascript">
+    
+    </script>
 
 </body>
 </html>
