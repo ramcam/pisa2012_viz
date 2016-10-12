@@ -69,7 +69,7 @@
         var svg = d3.select("body")
             .append("svg")
             .attr("width", width + margin)
-            .attr("height", height + margin)
+            .attr("height", height + 3*margin)
             .append('g')
             .attr('class', 'graph')
             .attr("transform", "translate(50,0)"); // adjust the position
@@ -99,6 +99,8 @@
         var yAxis = d3.svg.axis()
                   .scale(yScale)
                   .orient("left");
+
+        // ADD MINI-MAP!!!!!!!!!!!
 
         svg.append("g")
             .attr("class","axis")
@@ -272,8 +274,6 @@
             })
             .on("mouseover", handleMouseOver)
             .on("mouseout", handleMouseOut);
-
-
 
 
        	// we use the same to draw and bind the lines
@@ -562,6 +562,24 @@
                 d3.select(".q50" + classString).attr("visibility", "visible");
                 d3.select(".q25" + classString).attr("visibility", "visible");
                 d3.select(".bottom" + classString).attr("visibility", "visible");
+                svg.append("line")
+                    .attr("x1", 0)
+                    .attr("y1", yScale(d["q25"]))
+                    .attr("x2", width)
+                    .attr("y2", yScale(d["q25"]))
+                    .attr("stroke-width", 1)
+                    .attr("stroke", highlightColor)
+                    .attr("class", "tempQline")
+                    .attr("stroke-dasharray", 2);
+                svg.append("line")
+                    .attr("x1", 0)
+                    .attr("y1", yScale(d["q75"]))
+                    .attr("x2", width)
+                    .attr("y2", yScale(d["q75"]))
+                    .attr("stroke-width", 1)
+                    .attr("stroke", highlightColor)
+                    .attr("class", "tempQline")
+                    .attr("stroke-dasharray", 2);
             }
 
             function handleMouseOut (d, i) {
@@ -575,6 +593,7 @@
                 //remove text labels. comma notations means .top OR .q75 OR ...
                 d3.selectAll(".top,.q75,.q50,.q25,.bottom")
                     .attr("visibility", "hidden");
+                d3.selectAll(".tempQline").remove();
             }
 	}
 
