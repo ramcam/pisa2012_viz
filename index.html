@@ -5,10 +5,33 @@
 	<title>Visualization based on the Pisa 2012 Dataset by 
 		Guillermo Ramirez Camarero</title>
 	<script src="http://d3js.org/d3.v3.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Merriweather:700|PT+Sans:400,700" rel="stylesheet">
 	<style>
 		h2{
-			text-align: center;
+            font-family:'Merriweather', serif;
+            font-weight: 700;
+            font-size: 3em;
+            margin-top: 0px;
+            margin-bottom: 0px; 
 		}
+        h3{
+            font-weight: 400;
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 0px;
+            margin-bottom: 0px; 
+        }
+        .authorTag{
+            color:#000;
+        }
+        a{
+            text-decoration: underline;
+            color: #888;
+        }
+        a:hover{
+            color: #333;
+
+        }
 		/**{
 			border: 1px solid red;
 		}*/
@@ -50,6 +73,14 @@
         .graph{
             float: left;
         }
+        .sideDiv{
+            font-family: 'PT Sans', sans-serif;
+            max-width: 300px;
+            margin: 10px;
+        }
+        body{
+            margin-top: 70px;
+        }
 	</style>
 	<script type="text/javascript">
 
@@ -67,14 +98,23 @@
         var highlightColor = "#e34a33";
         var discreteColor = "#EEE"
 
-        d3.select("body")
-            .append ("h2")
-            .text("Pisa 2012 (sampled data)");
 
         // we add a svg element where we will draw a box and whiskers plot
         // we store it in a variable so we can avoid selecting it 
         // with d3.select("svg")
-        var mainDiv = d3.select("body").append("div").attr("class", "flex-container");
+        var mainDiv = d3.select("body")
+                        .append("div")
+                        .attr("class", "flex-container mainDiv");
+        var sideDiv = d3.select(".mainDiv")
+                        .append("div")
+                        .attr("class", "flex-item sideDiv");
+        sideDiv.append ("h2")
+            .text("PISA 2012");
+        sideDiv.append ("h3")
+            .html("A visualization based on 50000 samples of the <a href= https://www.oecd.org/pisa/pisaproducts/pisa2012database-downloadabledata.htm>PISA 2012 dataset</a>");
+        sideDiv.append ("h3")
+            .text("By GUILLERMO RAMÍREZ CAMARERO").attr("class", "authorTag");
+        sideDiv.append("p").text("Este es el texto que va dentro de el parrafo. Es un texto fantástico que no da ningún tipo de problemas. Puedo escribir lo que quiera y va a salir per feC to. Así como lo oyes.");
         var svg = d3.select("div.flex-container")
             .append("svg")
             .attr("width", width + margin)
@@ -109,7 +149,11 @@
                   .scale(yScale)
                   .orient("left");
 
-        // ADD MINI-MAP!
+        // MINI-MAP
+        // next step is to synchronize minimap with box, and vice-versa.
+        // also add choropleth.
+        // color participating countries slightly darker
+        /*
         var mapWidth = 400;
         var mapHeight = 260;
         var map = d3.select(".flex-container")
@@ -120,7 +164,6 @@
 
         d3.json("world_countries.json", function(error, world){
             if (error) return console.error(error);
-            console.log(world);
             var projection = d3.geo.mercator()
                                 .scale(60)
                                 .translate([175, 190]);
@@ -139,7 +182,7 @@
                       .on("mouseout", function (d){
                         d3.select(this).style("fill", discreteColor);
                       });
-        });
+        });*/
         // Add y axis 
         svg.append("g")
             .attr("class","axis")
