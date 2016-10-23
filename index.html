@@ -32,6 +32,9 @@
             color: #333;
 
         }
+        p{
+            font-size: 0.9em;
+        }
 		/**{
 			border: 1px solid red;
 		}*/
@@ -66,12 +69,22 @@
             font-family: sans-serif;
             font-size: 8px;
         }
+        .axisLabel{
+            font-size: 0.7em;
+            font-family: 'PT Sans', sans-serif;
+        }
+
         .flex-container{
             display: -webkit-flex;
             display: flex;
         }
         .graph{
             float: left;
+        }
+        .body{
+        }
+        svg{
+            padding: 10px;
         }
         .sideDiv{
             font-family: 'PT Sans', sans-serif;
@@ -91,7 +104,7 @@
 		var margin = 75,
             width = 1000 - margin,
             height = 600 - margin,
-            boxPadding = 5,
+            boxPadding = 4,
             boxWidth = width / data.length - boxPadding,
             medianLinePadding = 2;
         var integerFormat = d3.format(".0f");
@@ -114,14 +127,15 @@
             .html("A visualization based on 50000 samples of the <a href= https://www.oecd.org/pisa/pisaproducts/pisa2012database-downloadabledata.htm>PISA 2012 dataset</a>");
         sideDiv.append ("h3")
             .text("By GUILLERMO RAMÍREZ CAMARERO").attr("class", "authorTag");
-        sideDiv.append("p").text("Este es el texto que va dentro de el parrafo. Es un texto fantástico que no da ningún tipo de problemas. Puedo escribir lo que quiera y va a salir per feC to. Así como lo oyes.");
+        sideDiv.append("p").text("The PISA test measures how students perform in reading and math across several countries. More important than knowing which country is first or second is knowing how far the worst performing countries lie from the top rankers. For example, a remarkable student in Romania (percentile 75) would be an average student in Denmark and close to the lowest quartile in Japan. The boxes are coloured with the intention of dividing the countries into four groups according to their mean performance in the test. In a globalized world education inequality increasingly tranlates into economical inequality. Aggregate data can help us grasp the big picture, but it eventually hides some interesting subtleties. Feel free to sort the countries with other criteria in order to discover how boys and girls differ in performance around the globe or which countries manage to educate top achievers without leaving too many students behind.");
+        
         var svg = d3.select("div.flex-container")
             .append("svg")
             .attr("width", width + margin)
             .attr("height", height + 3*margin)
             .append('g')
             .attr('class', 'graph flex-item')
-            .attr("transform", "translate(50,0)"); // adjust the position
+            .attr("transform", "translate(70,0)"); // adjust the position
 
         // we define an ordinal scale:
         // a function that takes categories and returns colors.
@@ -188,6 +202,20 @@
             .attr("class","axis")
             .attr("transform", "translate(" + "-10" + ",0)")
             .call(yAxis);
+
+        // Add x axis label    
+        d3.select(".graph").append("text")
+            .attr("text-anchor", "middle")
+            .attr("transform", "translate("+ (width/2) +","+(height-5)+")")
+            .text("Ranking by mean result")
+            .attr("class", "axisLabel");
+
+        // Add y axis label    
+        d3.select(".graph").append("text")
+            .attr("text-anchor", "middle")
+            .attr("transform", "translate("+ (-45) +","+(height/2)+")rotate(-90)")
+            .text("Score in PISA test, year 2012")
+            .attr("class", "axisLabel");
 
 		// we draw horizontal lines for q10, q25, q50 and q75, q90 of the whole dataset
 		// the values come from R
@@ -283,8 +311,12 @@
             "mean" : "mean_ranking",
             "math" : "math_ranking",
             "read" : "read_ranking",
-            "mean_female" : "female_ranking",
             "mean_male" : "male_ranking",
+            "mean_male_math" : "male_math_ranking",
+            "mean_male_read" : "male_read_ranking",
+            "mean_female" : "female_ranking",
+            "mean_female_math" : "female_math_ranking",
+            "mean_female_read" : "female_read_ranking",
             "sd" : "sd_ranking",
             "diff_abs" : "abs_diff_ranking",
             "diff" : "diff_ranking"
@@ -296,8 +328,12 @@
             "mean" : "mean",
             "math" : "mean_math",
             "read" : "mean_read",
-            "mean_female" : "female_ranking",
-            "mean_male" : "male_ranking",
+            "mean_female" : "female",
+            "mean_male" : "male",
+            "mean_female_math" : "female_math",
+            "mean_male_math" : "male_math",
+            "mean_female_read" : "female_read",
+            "mean_male_read" : "male_read",
             "sd" : "sd",
             "diff_abs" : "mean_diff",
             "diff" : "mean_diff"
@@ -528,7 +564,7 @@
             .attr("class", "sortValue");
 
         // we add some buttons that allow us to change the sorting
-        var buttons = d3.select("body")
+        var buttons = d3.select(".sideDiv")
                         .append("div")
                         .attr("class", "sortButton")
                         .selectAll("div")
@@ -548,8 +584,8 @@
             d3.select(this)
                 .transition()
                 .duration(500)
-                .style("background", "lightblue")
-                .style("color", "white");
+                //.style("background", "lightblue")
+                .style("color", "grey");
             var clickedName = this.innerHTML;
 
             // transitions for all elements
