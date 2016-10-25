@@ -94,6 +94,16 @@
         body{
             margin-top: 70px;
         }
+        .sortButton{
+            font-family: 'PT Sans', sans-serif;
+            font-size: 0.7em;
+        }
+        .sortButton:hover{
+            fill: #000;
+        }
+        li{
+            margin-left: -20px;
+        }
 	</style>
 	<script type="text/javascript">
 
@@ -308,35 +318,34 @@
 
         // pairs the sorting keyword with the ranking column name in the dataset
         var sortMap = {
-            "mean" : "mean_ranking",
-            "math" : "math_ranking",
-            "read" : "read_ranking",
-            "mean_male" : "male_ranking",
-            "mean_male_math" : "male_math_ranking",
-            "mean_male_read" : "male_read_ranking",
-            "mean_female" : "female_ranking",
-            "mean_female_math" : "female_math_ranking",
-            "mean_female_read" : "female_read_ranking",
-            "sd" : "sd_ranking",
-            "diff_abs" : "abs_diff_ranking",
-            "diff" : "diff_ranking"
+            "mean score" : "mean_ranking",
+            "mean math score" : "math_ranking",
+            "mean reading score" : "read_ranking",
+            "mean score (boys)" : "male_ranking",
+            "mean math score (boys)" : "male_math_ranking",
+            "mean reading score (boys)" : "male_read_ranking",
+            "mean score (girls)" : "female_ranking",
+            "mean math score (girls)" : "female_math_ranking",
+            "mean reading score (girls)" : "female_read_ranking",
+            "standard deviation of scores" : "sd_ranking",
+            "difference of mean scores between genders (absolute)" : "abs_diff_ranking",
+            "difference of mean results between genders (girls - boys)" : "diff_ranking"
         }
 
         //pairs the sorting keyword with the value column name in the dataset
-        //i am missing columns for male and female mean data
         var sortMap2 = {
-            "mean" : "mean",
-            "math" : "mean_math",
-            "read" : "mean_read",
-            "mean_female" : "female",
-            "mean_male" : "male",
-            "mean_female_math" : "female_math",
-            "mean_male_math" : "male_math",
-            "mean_female_read" : "female_read",
-            "mean_male_read" : "male_read",
-            "sd" : "sd",
-            "diff_abs" : "mean_diff",
-            "diff" : "mean_diff"
+            "mean score" : "mean",
+            "mean math score" : "mean_math",
+            "mean reading score" : "mean_read",
+            "mean score (girls)" : "female",
+            "mean score (boys)" : "male",
+            "mean math score (girls)" : "female_math",
+            "mean math score (boys)" : "male_math",
+            "mean reading score (girls)" : "female_read",
+            "mean reading score (boys)" : "male_read",
+            "standard deviation of scores" : "sd",
+            "difference of mean scores between genders (absolute)" : "mean_diff",
+            "difference of mean results between genders (girls - boys)" : "mean_diff"
         }
 
         data.sort(sorter[sortKey]);
@@ -565,19 +574,34 @@
 
         // we add some buttons that allow us to change the sorting
         var buttons = d3.select(".sideDiv")
-                        .append("div")
+                        .append("ul")
                         .attr("class", "sortButton")
-                        .selectAll("div")
+                        .selectAll("li")
                         .data(Object.keys(sortMap))
                         .enter()
-                        .append("div")
+                        .append("li")
                         .text(function (d){
                             return d;
-                        });
+                        })
+                        .style("list-style-type", "none")
+                        .attr("class", "buttonText");
 
+        buttons.on("mouseover", function (d){
+            d3.select(this)
+                .style("font-weight", "bold")
+                .style("list-style-type", "disc");
+        });
+
+        buttons.on("mouseout", function (d){
+            d3.select(this)
+                .style("font-weight", "normal")
+                .style("list-style-type", "none");
+        });
+
+        // we define the behaviour of the buttons when clicked.
         buttons.on("click", function (d){
             d3.select(".sortButton")
-                .selectAll("div")
+                .selectAll("li")
                 .transition()
                 .duration(500)
                 .style("color", "black");
