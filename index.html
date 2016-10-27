@@ -81,8 +81,6 @@
         .graph{
             float: left;
         }
-        .body{
-        }
         svg{
             padding: 10px;
         }
@@ -92,7 +90,7 @@
             margin: 10px;
         }
         body{
-            margin-top: 70px;
+            margin-top: 25px;
         }
         .sortButton{
             font-family: 'PT Sans', sans-serif;
@@ -113,8 +111,8 @@
 	function draw(data){
 
 		var margin = 75,
-            width = 1000 - margin,
-            height = 600 - margin,
+            width = 960 - margin,
+            height = 500 - margin,
             boxPadding = 4,
             boxWidth = width / data.length - boxPadding,
             medianLinePadding = 2;
@@ -129,9 +127,11 @@
         var mainDiv = d3.select("body")
                         .append("div")
                         .attr("class", "flex-container mainDiv");
+                        
         var sideDiv = d3.select(".mainDiv")
                         .append("div")
                         .attr("class", "flex-item sideDiv");
+                        
         sideDiv.append ("h2")
             .text("PISA 2012");
         sideDiv.append ("h3")
@@ -218,15 +218,15 @@
         d3.select(".graph").append("text")
             .attr("text-anchor", "middle")
             .attr("transform", "translate("+ (width/2) +","+(height-5)+")")
-            .text("Ranking by mean result")
-            .attr("class", "axisLabel");
+            .text("Ranking by mean score")
+            .attr("class", "axisLabel X");
 
         // Add y axis label    
         d3.select(".graph").append("text")
             .attr("text-anchor", "middle")
             .attr("transform", "translate("+ (-45) +","+(height/2)+")rotate(-90)")
             .text("Score in PISA test, year 2012")
-            .attr("class", "axisLabel");
+            .attr("class", "axisLabel Y");
 
 		// we draw horizontal lines for q10, q25, q50 and q75, q90 of the whole dataset
 		// the values come from R
@@ -574,6 +574,10 @@
             .attr("class", "sortValue");
 
         // we add some buttons that allow us to change the sorting
+        d3.select(".sideDiv")
+            .append("h5")
+            .text("Try other sorting criteria:");
+
         var buttons = d3.select(".sideDiv")
                         .append("ul")
                         .attr("class", "sortButton")
@@ -677,6 +681,8 @@
                 .text(function (d){
                     return integerFormat(d[sortMap2[clickedName]]);
                 });
+            console.log(d3.selectAll(".X"));
+            d3.selectAll(".X").text("Ranking by "+ clickedName);
 
         });
         
