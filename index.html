@@ -699,8 +699,15 @@
                 })
                 .text(function (d){
                     return integerFormat(d[sortMap2[clickedName]]);
+                })
+                // highlight negative values
+                .style("fill", function (d){
+                    if(d[sortMap2[clickedName]]<0){
+                        return highlightColor;
+                    };
                 });
-            console.log(d3.selectAll(".X"));
+                
+            // change x axis title
             d3.selectAll(".X").text("Ranking by "+ clickedName);
 
         });
