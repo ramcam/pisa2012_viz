@@ -46,11 +46,16 @@
 		.countryName{
 			font-size: 14px;
 		}
-		.quantiles{
+		.quantile{
 			stroke: #BBB;
 			stroke-width: 1;
 			stroke-dasharray: 2;
 		}
+        .quantileLabel{
+            font-family: 'PT Sans', sans-serif;
+            font-size: 0.5em;
+            fill: #AAA;
+        }
         .box:hover {
             /*fill: red;*/
         }
@@ -103,6 +108,7 @@
             margin-left: -20px;
             text-indent: -7px;
         }
+ 
 	</style>
 	<script type="text/javascript">
 
@@ -110,7 +116,7 @@
 
 	function draw(data){
 
-		var margin = 75,
+		var margin = 80,
             width = 960 - margin,
             height = 500 - margin,
             boxPadding = 4,
@@ -138,7 +144,7 @@
             .html("A visualization based on 50000 samples of the <a href= https://www.oecd.org/pisa/pisaproducts/pisa2012database-downloadabledata.htm>PISA 2012 dataset</a>");
         sideDiv.append ("h3")
             .text("By GUILLERMO RAMÍREZ CAMARERO").attr("class", "authorTag");
-        sideDiv.append("p").text("The PISA test measures how students perform in reading and math across several countries. More important than knowing which country is first or second is knowing how far the worst performing countries lie from the top rankers. For example, a remarkable student in Romania (percentile 75) would be an average student in Denmark and close to the lowest quartile in Japan. The boxes are coloured with the intention of dividing the countries into four groups according to their mean performance in the test. In a globalized world education inequality increasingly tranlates into economical inequality. Aggregate data can help us grasp the big picture, but it eventually hides some interesting subtleties. Feel free to sort the countries with other criteria in order to discover how boys and girls differ in performance around the globe or which countries manage to educate top achievers without leaving too many students behind.");
+        sideDiv.append("p").text("The PISA test measures how 15-year-old students from around the world perform in reading and math. More important than knowing which country is first or second is knowing how far the worst performing countries lie from the top rankers. For example, a remarkable student in Romania (percentile 75) would be an average student in Denmark and close to the lowest quartile in Japan. The boxes are coloured with the intention of dividing the countries into four groups according to their mean performance in the test. In a globalized world education inequality increasingly tranlates into economical inequality. Aggregate data can help us grasp the big picture, but it eventually hides some interesting subtleties. Feel free to sort the countries with other criteria in order to discover how boys and girls differ in performance around the globe or which countries manage to educate top achievers without leaving too many students behind.");
         
         var svg = d3.select("div.flex-container")
             .append("svg")
@@ -231,23 +237,23 @@
 		// we draw horizontal lines for q10, q25, q50 and q75, q90 of the whole dataset
 		// the values come from R
 		var yQuantiles = [{
-								"val" : 692.0664,
+								"val" : 801.7966,
 								"quantile" : 0.1
 							},{	
-								"val": 804.4097,
+								"val": 884.9700,
 								"quantile": 0.25
 							},{	
-								"val": 941.5230,
+								"val": 970.8725,
 								"quantile": 0.5
 							},{	
-								"val": 1080.3378,
+								"val": 1019.8744,
 								"quantile": 0.75
 							},{	
-								"val": 1195.2561,
+								"val": 1058.8466,
 								"quantile": 0.9
 							}];
 
-		svg.selectAll("line.quantiles")
+		svg.selectAll("line.quantile")
 			.data(yQuantiles)
 			.enter()
 			.append("line")
@@ -259,7 +265,20 @@
 			.attr("y2", function (d){
 				return yScale(d["val"]);
 			})
-			.attr("class", "quantiles")
+			.attr("class", "quantile");
+
+        svg.selectAll("text.quantileLabel")
+            .data(yQuantiles)
+            .enter()
+            .append("text")
+            .attr("x",width)
+            .attr("y", function (d){
+                return yScale(d["val"]);
+            })
+            .text(function (d){
+                return "q" + d["quantile"];
+            })
+            .attr("class", "quantileLabel");
 
         // next we select all rectangles (not yet created, so this returns an
         // empty selection). data() sees there are N values in the dataset, so
