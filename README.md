@@ -8,8 +8,17 @@ After feedback, I colored the countries in four groups according to their mean s
 
 ###Feedback
 I presented the graph in person to some of my friends. They understood the story I was trying to convey and they were able to identify relations in the data, such as how some countries have larger differences between top and bottom scores, how do girls and boys differ in performance, or which countries manage to achieve high scores without leaving too many students behind.
-1- "When you explain the graph orally you refer to the countries as the *best scoring ones* and the *worst scoring ones*. It would help to make your point clearer if there was something marking which countries belong to which group.
+1- "When you explain the graph orally you refer to the countries as the *best scoring ones* and the *worst scoring ones*. It would help to make your point clearer if there was something marking which countries belong to which group".
 2- "I understand that the countries are ranked from left to right, the ones at the right being the top performers according to the selected criterion, but it would help me understand the graph more easily if I could read somewhere what is the value that is being used to rank the countries."
 3- "Its difficult to know that the buttons are actually buttons and that we are supposed to play with them."
 
 ###Resources
+Scott Murray:
+http://alignedleft.com/tutorials/d3/axes
+http://alignedleft.com/tutorials/d3/making-a-bar-chart
+Tooltips:
+http://bl.ocks.org/Caged/6476579
+Mouse events:
+http://bl.ocks.org/WilliamQLiu/76ae20060e19bf42d774
+D3 reference:
+https://github.com/d3/d3/blob/master/API.md
