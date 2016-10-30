@@ -5,784 +5,832 @@
 	<title>Visualization based on the Pisa 2012 Dataset by 
 		Guillermo Ramirez Camarero</title>
 	<script src="http://d3js.org/d3.v3.min.js"></script>
-    <link href="https://fonts.googleapis.com/css?family=Merriweather:700|PT+Sans:400,700" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Merriweather:700|PT+Sans:400,700" rel="stylesheet">
 	<style>
 		h2{
-            font-family:'Merriweather', serif;
-            font-weight: 700;
-            font-size: 3em;
-            margin-top: 0px;
-            margin-bottom: 0px; 
+			font-family:'Merriweather', serif;
+			font-weight: 700;
+			font-size: 3em;
+			margin-top: 0px;
+			margin-bottom: 0px;
 		}
-        h3{
-            font-weight: 400;
-            font-size: 0.8em;
-            color: #888;
-            margin-top: 0px;
-            margin-bottom: 0px; 
-        }
-        .authorTag{
-            color:#000;
-        }
-        a{
-            text-decoration: underline;
-            color: #888;
-        }
-        a:hover{
-            color: #333;
+		h3{
+			font-weight: 400;
+			font-size: 0.8em;
+			color: #888;
+			margin-top: 0px;
+			margin-bottom: 0px;
+		}
+		.authorTag{
+			color:#000;
+		}
+		a{
+			text-decoration: underline;
+			color: #888;
+		}
+		a:hover{
+			color: #333;
 
-        }
-        p{
-            font-size: 0.9em;
-        }
-		/**{
-			border: 1px solid red;
-		}*/
+		}
+		p{
+			font-size: 0.9em;
+		}
+
 		text{
 			fill : #000;
 			font-size: 8px;
-            font-family: sans-serif;
+			font-family: sans-serif;
 		}
 		.countryName{
-			font-size: 14px;
+			font-size: 12px;
 		}
 		.quantile{
 			stroke: #BBB;
 			stroke-width: 1;
 			stroke-dasharray: 2;
 		}
-        .quantileLabel{
-            font-family: 'PT Sans', sans-serif;
-            font-size: 0.5em;
-            fill: #AAA;
-        }
-        .box:hover {
-            /*fill: red;*/
-        }
-        .whisker{
-            /*shape-rendering: crispEdges;*/
-        }
+		.quantileLabel{
+			font-family: 'PT Sans', sans-serif;
+			font-size: 0.5em;
+			fill: #AAA;
+		}
 
-        .axis path,
-        .axis line {
-            fill: none;
-            stroke: black;
-            shape-rendering: crispEdges;
-        }
+		.axis path,
+		.axis line {
+			fill: none;
+			stroke: black;
+			shape-rendering: crispEdges;
+		}
 
-        .axis text {
-            font-family: sans-serif;
-            font-size: 8px;
-        }
-        .axisLabel{
-            font-size: 0.7em;
-            font-family: 'PT Sans', sans-serif;
-        }
+		.axis text {
+			font-family: sans-serif;
+			font-size: 8px;
+		}
+		.axisLabel{
+			font-size: 0.7em;
+			font-family: 'PT Sans', sans-serif;
+		}
 
-        .flex-container{
-            display: -webkit-flex;
-            display: flex;
-        }
-        .graph{
-            float: left;
-        }
-        svg{
-            padding: 10px;
-        }
-        .sideDiv{
-            font-family: 'PT Sans', sans-serif;
-            max-width: 300px;
-            margin: 10px;
-        }
-        body{
-            margin-top: 25px;
-        }
-        .sortButton{
-            font-family: 'PT Sans', sans-serif;
-            font-size: 0.7em;
-        }
-        .sortButton:hover{
-            fill: #000;
-        }
-        li{
-            margin-left: -20px;
-            text-indent: -7px;
-        }
- 
+		.flex-container{
+			display: -webkit-flex;
+			display: flex;
+		}
+		.graph{
+			float: left;
+		}
+		svg{
+			padding: 10px;
+		}
+		.sideDiv{
+			font-family: 'PT Sans', sans-serif;
+			max-width: 300px;
+			margin: 10px;
+		}
+		body{
+			margin-top: 25px;
+		}
+		.sortButton{
+			font-family: 'PT Sans', sans-serif;
+			font-size: 0.7em;
+		}
+		.sortButton:hover{
+			fill: #000;
+		}
+		li{
+			margin-left: -20px;
+			text-indent: -7px;
+		}
+
 	</style>
 	<script type="text/javascript">
 
-	"use strict";// ensures no silent errors
+	"use strict"; // Ensures no silent errors
 
-	function draw(data){
+	function draw(data) {
 
 		var margin = 80,
-            width = 960 - margin,
-            height = 500 - margin,
-            boxPadding = 4,
-            boxWidth = width / data.length - boxPadding,
-            medianLinePadding = 2;
-        var integerFormat = d3.format(".0f");
-        var highlightColor = "#e34a33";
-        var discreteColor = "#EEE"
+			width = 960 - margin,
+			height = 500 - margin,
+			boxPadding = 4,
+			boxWidth = width / data.length - boxPadding,
+			medianLinePadding = 2;
+		var integerFormat = d3.format(".0f");
+		var highlightColor = "#e34a33";
+		var discreteColor = "#EEE"
+		var mainDiv = d3.select("body")
+			.append("div")
+			.attr("class", "flex-container mainDiv");
 
+		var sideDiv = d3.select(".mainDiv")
+			.append("div")
+			.attr("class", "flex-item sideDiv");
 
-        // we add a svg element where we will draw a box and whiskers plot
-        // we store it in a variable so we can avoid selecting it 
-        // with d3.select("svg")
-        var mainDiv = d3.select("body")
-                        .append("div")
-                        .attr("class", "flex-container mainDiv");
-                        
-        var sideDiv = d3.select(".mainDiv")
-                        .append("div")
-                        .attr("class", "flex-item sideDiv");
-                        
-        sideDiv.append ("h2")
-            .text("PISA 2012");
-        sideDiv.append ("h3")
-            .html("A visualization based on 50000 samples of the <a href= https://www.oecd.org/pisa/pisaproducts/pisa2012database-downloadabledata.htm>PISA 2012 dataset</a>");
-        sideDiv.append ("h3")
-            .text("By GUILLERMO RAMÍREZ CAMARERO").attr("class", "authorTag");
-        sideDiv.append("p").text("The PISA test measures how 15-year-old students from around the world perform in reading and math. More important than knowing which country is first or second is knowing how far the worst performing countries lie from the top rankers. For example, a remarkable student in Romania (percentile 75) would be an average student in Denmark and close to the lowest quartile in Japan. The boxes are coloured with the intention of dividing the countries into four groups according to their mean performance in the test. In a globalized world education inequality increasingly translates into economical inequality. Aggregate data can help us grasp the big picture, but it eventually hides some interesting subtleties. Feel free to sort the countries with other criteria in order to discover how boys and girls differ in performance around the globe or which countries manage to educate top achievers without leaving too many students behind.");
-        
-        var svg = d3.select("div.flex-container")
-            .append("svg")
-            .attr("width", width + margin)
-            .attr("height", height + 3*margin)
-            .append('g')
-            .attr('class', 'graph flex-item')
-            .attr("transform", "translate(70,0)"); // adjust the position
+		sideDiv.append("h2")
+			.text("PISA 2012");
+		sideDiv.append("h3")
+			.html("A visualization based on 50000 samples of the <a href= https://www.oecd.org/pisa/pisaproducts/pisa2012database-downloadabledata.htm>PISA 2012 dataset</a>");
+		sideDiv.append("h3")
+			.text("By GUILLERMO RAMÍREZ CAMARERO").attr("class", "authorTag");
+		sideDiv.append("p").text("The PISA test measures how 15-year-old students from around the world perform in reading and math. More important than knowing which country is first or second is knowing how far the worst performing countries lie from the top rankers. For example, a remarkable student in Romania (percentile 75) would be an average student in Denmark and close to the lowest quartile in Japan. The boxes are coloured with the intention of dividing the countries into four groups according to their mean performance in the test. In a globalized world education inequality increasingly translates into economical inequality. Aggregate data can help us grasp the big picture, but it eventually hides some interesting subtleties. Feel free to sort the countries with other criteria in order to discover how boys and girls differ in performance around the globe or which countries manage to educate top achievers without leaving too many students behind.");
 
-        // we define an ordinal scale:
-        // a function that takes categories and returns colors.
-        // we will use this function to assign a color to every country
-        // according to their "quantile group", that is, they are sorted into
-        // 4 groups according to their mean score in the PISA test.
-        var quantileColor = d3.scale.ordinal()
-        							.domain(["<q25", "<q50", "<q75", ">q75"])
-        							.range(["#c2e699", "#78c679", 
-        									"#31a354", "#006837"]);
-        							/*.range(["#d7191c", "#fdae61", 
-        									"#abd9e9", "#2c7bb6"]);*/
-		// we define scale functions for the x and y axis.
-        var xScale = d3.scale.linear()
-                        .domain([0, data.length])
-                        .range([0, width]);
+		var svg = d3.select("div.flex-container")
+			.append("svg")
+			.attr("width", width + margin)
+			.attr("height", height + 3 * margin)
+			.append('g')
+			.attr('class', 'graph flex-item')
+			.attr("transform", "translate(70,0)"); // adjust the position
+
+		/** 
+		* We define an ordinal scale:
+		* a function that takes categories and returns colors.
+		* we will use this function to assign a color to every country
+		* according to their "quantile group", that is, they are sorted into
+		* 4 groups according to their mean score in the PISA test.
+		*/
+		var quantileColor = d3.scale.ordinal()
+			.domain(["<q25", "<q50", "<q75", ">q75"])
+			.range(["#c2e699", "#78c679",
+				"#31a354", "#006837"
+			]);
+
+		// We define scale functions for the x and y axis.
+		var xScale = d3.scale.linear()
+			.domain([0, data.length])
+			.range([0, width]);
 		var yScale = d3.scale.linear()
-						.domain([250,1700])
-						.range([height, 0]);
+			.domain([250, 1700])
+			.range([height, 0]);
 
-        // http://alignedleft.com/tutorials/d3/axes
-        // as explained in the link, g defines a group for the elements after
-        // and call() hands off a selection to any function
-        var yAxis = d3.svg.axis()
-                  .scale(yScale)
-                  .orient("left");
+		// call() hands off a selection to any function. 
+		var yAxis = d3.svg.axis()
+			.scale(yScale)
+			.orient("left");
 
-        // MINI-MAP
-        // next step is to synchronize minimap with box, and vice-versa.
-        // also add choropleth.
-        // color participating countries slightly darker
-        /*
-        var mapWidth = 400;
-        var mapHeight = 260;
-        var map = d3.select(".flex-container")
-                        .append("svg")
-                        .attr("width", mapWidth)
-                        .attr("height", mapHeight)
-                        .attr("class", "worldmap flex-item");
+		// Add y axis.
+		svg.append("g")
+			.attr("class", "axis")
+			.attr("transform", "translate(" + "-10" + ",0)")
+			.call(yAxis);
 
-        d3.json("world_countries.json", function(error, world){
-            if (error) return console.error(error);
-            var projection = d3.geo.mercator()
-                                .scale(60)
-                                .translate([175, 190]);
-            var path = d3.geo.path().projection(projection);
-            map.selectAll("path")
-                      .data(world.features)
-                      .enter()
-                      .append("path")
-                      .attr("d", path)
-                      .style("fill", discreteColor)
-                      .style("stroke", "white")
-                      .style("stroke-width", 0.5)
-                      .on("mouseover", function (d){
-                        d3.select(this).style("fill", highlightColor);
-                      })
-                      .on("mouseout", function (d){
-                        d3.select(this).style("fill", discreteColor);
-                      });
-        });*/
-        // Add y axis 
-        svg.append("g")
-            .attr("class","axis")
-            .attr("transform", "translate(" + "-10" + ",0)")
-            .call(yAxis);
+		// Add x axis label.
+		d3.select(".graph").append("text")
+			.attr("text-anchor", "middle")
+			.attr("transform", "translate(" + (width / 2) + "," + (height - 5) + ")")
+			.text("Ranking by mean score")
+			.attr("class", "axisLabel X");
 
-        // Add x axis label    
-        d3.select(".graph").append("text")
-            .attr("text-anchor", "middle")
-            .attr("transform", "translate("+ (width/2) +","+(height-5)+")")
-            .text("Ranking by mean score")
-            .attr("class", "axisLabel X");
+		// Add y axis label.
+		d3.select(".graph").append("text")
+			.attr("text-anchor", "middle")
+			.attr("transform", "translate(" + (-45) + "," + (height / 2) + ")rotate(-90)")
+			.text("Score in PISA test, year 2012")
+			.attr("class", "axisLabel Y");
 
-        // Add y axis label    
-        d3.select(".graph").append("text")
-            .attr("text-anchor", "middle")
-            .attr("transform", "translate("+ (-45) +","+(height/2)+")rotate(-90)")
-            .text("Score in PISA test, year 2012")
-            .attr("class", "axisLabel Y");
-
-		// we draw horizontal lines for q10, q25, q50 and q75, q90 of the whole dataset
-		// the values come from R
+		/** 
+		* We draw horizontal lines for q10, q25, q50 and q75, q90 of the whole dataset
+		* the values come from R
+		*/
 		var yQuantiles = [{
-								"val" : 801.7966,
-								"quantile" : 0.1
-							},{	
-								"val": 884.9700,
-								"quantile": 0.25
-							},{	
-								"val": 970.8725,
-								"quantile": 0.5
-							},{	
-								"val": 1019.8744,
-								"quantile": 0.75
-							},{	
-								"val": 1058.8466,
-								"quantile": 0.9
-							}];
+			"val": 801.7966,
+			"quantile": 0.1
+		}, {
+			"val": 884.9700,
+			"quantile": 0.25
+		}, {
+			"val": 970.8725,
+			"quantile": 0.5
+		}, {
+			"val": 1019.8744,
+			"quantile": 0.75
+		}, {
+			"val": 1058.8466,
+			"quantile": 0.9
+		}];
 
 		svg.selectAll("line.quantile")
 			.data(yQuantiles)
 			.enter()
 			.append("line")
 			.attr("x1", 0)
-			.attr("y1", function (d){
+			.attr("y1", function(d) {
 				return yScale(d["val"]);
 			})
 			.attr("x2", width)
-			.attr("y2", function (d){
+			.attr("y2", function(d) {
 				return yScale(d["val"]);
 			})
 			.attr("class", "quantile");
 
-        svg.selectAll("text.quantileLabel")
-            .data(yQuantiles)
-            .enter()
-            .append("text")
-            .attr("x",width)
-            .attr("y", function (d){
-                return yScale(d["val"]);
-            })
-            .text(function (d){
-                return "q" + d["quantile"];
-            })
-            .attr("class", "quantileLabel");
+		// Add quantile labels.
+		svg.selectAll("text.quantileLabel")
+			.data(yQuantiles)
+			.enter()
+			.append("text")
+			.attr("x", width)
+			.attr("y", function(d) {
+				return yScale(d["val"]);
+			})
+			.text(function(d) {
+				return "q" + d["quantile"];
+			})
+			.attr("class", "quantileLabel");
 
-        // next we select all rectangles (not yet created, so this returns an
-        // empty selection). data() sees there are N values in the dataset, so
-		// it calls enter() N times. enter() returns a placeholder selection for each datapoint that still doesn't have a rectangle appended (all of them)
-		// append() places the rectangles 
-		// clear explanation of this by Scott Murray in: 
-		// http://alignedleft.com/tutorials/d3/making-a-bar-chart
+		// Add quantile line legend
+		svg.append("line")
+			.attr("x1", width - 50)
+			.attr("y1", height - 40)
+			.attr("x2", width - 10)
+			.attr("y2", height - 40)
+			.attr("class", "quantile");
+
+		svg.append("text")
+			.attr("x", width)
+			.attr("y", height - 40)
+			.text("q0.XX")
+			.attr("class", "quantileLabel");
+
+		svg.append("text")
+			.attr("x", width + 20)
+			.attr("y", height - 50)
+			.style("text-anchor", "end")
+			.text("Country mean score quantile");
+
+		/** 
+		* Sort the data before binding
+		* note: mean_diff variable is positive if girls do better than boys
+		* negative if boys do better than girls
+		*/
+
+		var sortKey = "mean";
+		var sorter = {
+				"mean": (function(a, b) {
+					return parseFloat(a["mean_ranking"]) -
+						parseFloat(b["mean_ranking"]);
+				}),
+				"math": (function(a, b) {
+					return parseFloat(a["math_ranking"]) -
+						parseFloat(b["math_ranking"]);
+				}),
+				"read": (function(a, b) {
+					return parseFloat(a["read_ranking"]) -
+						parseFloat(b["read_ranking"]);
+				}),
+				"mean_female": (function(a, b) {
+					return parseFloat(b["female_ranking"]) -
+						parseFloat(a["female_ranking"]);
+				}),
+				"mean_male": (function(a, b) {
+					return parseFloat(b["male_ranking"]) -
+						parseFloat(a["male_ranking"]);
+				}),
+				"sd": (function(a, b) {
+					return parseFloat(b["sd_ranking"]) -
+						parseFloat(a["sd_ranking"]);
+				}),
+				"diff_abs": (function(a, b) {
+					return Math.abs(parseFloat(b["mean_diff"])) -
+						Math.abs(parseFloat(a["mean_diff"]));
+				}),
+				"diff": (function(a, b) {
+					return parseFloat(a["diff_ranking"]) -
+						parseFloat(b["diff_ranking"]);
+				})
+			}
+			/** 
+			* For each feature there are two types of columns in the dataset: 
+			* ones that contain the values, and others which only contain a 
+			* precalculated ranking position
+			*/
+
+		// Pairs the sorting keyword with the ranking column name in the dataset.
+		var sortMap = {
+			"mean score": "mean_ranking",
+			"mean math score": "math_ranking",
+			"mean reading score": "read_ranking",
+			"mean score (boys)": "male_ranking",
+			"mean math score (boys)": "male_math_ranking",
+			"mean reading score (boys)": "male_read_ranking",
+			"mean score (girls)": "female_ranking",
+			"mean math score (girls)": "female_math_ranking",
+			"mean reading score (girls)": "female_read_ranking",
+			"standard deviation of scores": "sd_ranking",
+			"difference of mean scores between genders (absolute)": "abs_diff_ranking",
+			"difference of mean results between genders (girls - boys)": "diff_ranking"
+		}
+
+		// Pairs the sorting keyword with the value column name in the dataset.
+		var sortMap2 = {
+			"mean score": "mean",
+			"mean math score": "mean_math",
+			"mean reading score": "mean_read",
+			"mean score (girls)": "female",
+			"mean score (boys)": "male",
+			"mean math score (girls)": "female_math",
+			"mean math score (boys)": "male_math",
+			"mean reading score (girls)": "female_read",
+			"mean reading score (boys)": "male_read",
+			"standard deviation of scores": "sd",
+			"difference of mean scores between genders (absolute)": "mean_diff",
+			"difference of mean results between genders (girls - boys)": "mean_diff"
+		}
+
+		data.sort(sorter[sortKey]);
+
+		svg.selectAll("line.whisker")
+			.data(data)
+			.enter()
+			.append("line")
+			.attr("x1", function(d, i) {
+				return xScale(i) + boxWidth / 2;
+			})
+			.attr("y1", function(d) {
+				return yScale(d["bottom"]);
+			})
+			.attr("x2", function(d, i) {
+				return xScale(i) + boxWidth / 2;
+			})
+			.attr("y2", function(d) {
+				return yScale(d["top"]);
+			})
+			.attr("stroke-width", 1)
+			.attr("stroke", function(d) {
+				return quantileColor(d["mean_quantiles"]);
+			})
+			.attr("class", function(d, i) {
+				return "whisker c" + i;
+			});
+
+		svg.selectAll("rect.box")
+			.data(data)
+			.enter()
+			.append("rect")
+			.attr("x", function(d, i) {
+				return xScale(i);
+			})
+			.attr("y", function(d) {
+				return yScale(d["q75"]);
+			})
+			.attr("width", boxWidth)
+			.attr("height", function(d) {
+				return Math.abs(yScale(d["q75"]) - yScale(d["q25"]));
+			}).attr("fill", function(d) {
+				return quantileColor(d["mean_quantiles"]);
+			})
+			.attr("class", function(d, i) {
+				/** 
+				* Two classes, one for type of element, another for number
+				* of element
+				*/
+				return "box c" + i;
+			})
+			.attr("ID", function(d, i) {
+				return i;
+			})
+			.on("mouseover", handleMouseOver)
+			.on("mouseout", handleMouseOut);
+
+
+		/** 
+		* We use the same to draw and bind the lines
+		* note how we have to refer to line.median to avoid confusion
+		* with the already drawn line.whisker !
+		* we refer to line.median even though we don't assing the class name
+		* until the end of the chain in .attr("class", "median")
+		*/
+		svg.selectAll("line.median")
+			.data(data)
+			.enter()
+			.append("line")
+			.attr("x1", function(d, i) {
+				return xScale(i) + medianLinePadding;
+			})
+			.attr("y1", function(d) {
+				return yScale(d["q50"]);
+			})
+			.attr("x2", function(d, i) {
+				return xScale(i) + boxWidth - medianLinePadding;
+			})
+			.attr("y2", function(d) {
+				return yScale(d["q50"]);
+			})
+			.attr("stroke-width", 1)
+			.attr("stroke", "white")
+			.attr("class", function(d, i) {
+				return "median c" + i;
+			});
+
+		svg.selectAll("text.top")
+			.data(data)
+			.enter()
+			.append("text")
+			.attr("x", function(d, i) {
+				return xScale(i) + 1.3 * boxWidth;
+			})
+			.attr("y", function(d) {
+				return yScale(d["top"]);
+			})
+			.text(function(d) {
+				return integerFormat(d["top"]);
+			})
+			.attr("class", function(d, i) {
+				return "top c" + i;
+			})
+			.attr("visibility", "hidden");
+
+		svg.selectAll("text.q75")
+			.data(data)
+			.enter()
+			.append("text")
+			.attr("x", function(d, i) {
+				return xScale(i) + 1.3 * boxWidth;
+			})
+			.attr("y", function(d) {
+				return yScale(d["q75"]);
+			})
+			.text(function(d) {
+				return integerFormat(d["q75"]);
+			})
+			.attr("class", function(d, i) {
+				return "q75 c" + i;
+			})
+			.attr("visibility", "hidden");
+
+		svg.selectAll("text.q50")
+			.data(data)
+			.enter()
+			.append("text")
+			.attr("x", function(d, i) {
+				return xScale(i) + 1.3 * boxWidth;
+			})
+			.attr("y", function(d) {
+				return yScale(d["q50"]);
+			})
+			.text(function(d) {
+				return integerFormat(d["q50"]);
+			})
+			.attr("class", function(d, i) {
+				return "q50 c" + i;
+			})
+			.attr("visibility", "hidden");
+
+		svg.selectAll("text.q25")
+			.data(data)
+			.enter()
+			.append("text")
+			.attr("x", function(d, i) {
+				return xScale(i) + 1.3 * boxWidth;
+			})
+			.attr("y", function(d) {
+				return yScale(d["q25"]);
+			})
+			.text(function(d) {
+				return integerFormat(d["q25"]);
+			})
+			.attr("class", function(d, i) {
+				return "q25 c" + i;
+			})
+			.attr("visibility", "hidden");
+
+		svg.selectAll("text.bottom")
+			.data(data)
+			.enter()
+			.append("text")
+			.attr("x", function(d, i) {
+				return xScale(i) + 1.3 * boxWidth;
+			})
+			.attr("y", function(d) {
+				return yScale(d["bottom"]);
+			})
+			.text(function(d) {
+				return integerFormat(d["bottom"]);
+			})
+			.attr("class", function(d, i) {
+				return "bottom c" + i;
+			})
+			.attr("visibility", "hidden");
+
+		svg.selectAll(".top,.q75,.q50,.q25,.bottom")
+			.style("fill", highlightColor)
+			.style("font-weight", "bold")
+			.style("font-family", "sans-serif")
+			.style("background-color", "white")
+			.style("text-shadow", "1px 0 0 #fff,-1px 0 0 #fff,0 1px 0 #fff,0 -1px 0 #fff,1px 1px #fff,-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff");
+
+
+		svg.selectAll("text.countryName")
+			.data(data)
+			.enter()
+			.append("text")
+			.attr("x", function(d, i) {
+				return xScale(i) + 0.7 * boxWidth;
+			})
+			.attr("y", height + 20)
+			.text(function(d) {
+				return d["country_code"];
+			})
+			.attr("text-anchor", "end")
+			.attr("transform", function(d, i) {
+				return "rotate(-90," +
+					(xScale(i) + 0.7 * boxWidth) +
+					"," +
+					(height + 20) +
+					")";
+			})
+			.attr("class", function(d, i) {
+				return "countryName c" + i;
+			});
+
+		svg.selectAll("text.sortValue")
+			.data(data)
+			.enter()
+			.append("text")
+			.attr("x", function(d, i) {
+				return xScale(i) + 0.7 * boxWidth;
+			})
+			.attr("y", height + 15)
+			.text(function(d) {
+				return integerFormat(d[sortKey]);
+			})
+			.attr("transform", function(d, i) {
+				return "rotate(-90," +
+					(xScale(i) + 0.7 * boxWidth) +
+					"," +
+					(height + 15) +
+					")";
+			})
+			.attr("class", "sortValue");
+
+		// We define a function that draws explanatory graphics.
 		console.log(data);
+		var selectedCountries = ["Romania", "Denmark", "Japan"];
+		var selectedPercentiles = ["q75","q50","q25"];
+		var filtered = data.filter(function (d){
+				return selectedCountries.indexOf(d["country_code"]) > -1;
+		});
+		console.log(filtered);
+		var explain = function (d){
 
-        // sort the data before binding
-        // note: mean_diff variable is positive if females do better than males
-        // negative if males do better than females
-        // diff ranking shows low numbers (1,2,3...) for negative values
-        // (males better than females). Here the ranking does not make sense 
-        // since the data is divergent. For this purpose I have added a function
-        // diff_abs which measures the absolute difference regardless of gender.
-        // lower absolute differences appear to the right when plotted.
-        
-        var sortKey = "mean";
-        var sorter = {
-            "mean" : (function (a,b){
-                    return parseFloat(a["mean_ranking"]) - 
-                           parseFloat(b["mean_ranking"]);
-                }),
-            "math" : (function (a,b){
-                    return parseFloat(a["math_ranking"]) -
-                           parseFloat(b["math_ranking"]);
-                }),
-            "read" : (function (a,b){
-                    return parseFloat(a["read_ranking"]) - 
-                           parseFloat(b["read_ranking"]);
-                }),
-            "mean_female" : (function (a,b){
-                    return parseFloat(b["female_ranking"]) - 
-                           parseFloat(a["female_ranking"]);
-                }),
-            "mean_male" : (function (a,b){
-                    return parseFloat(b["male_ranking"]) - 
-                           parseFloat(a["male_ranking"]);
-                }),
-            "sd" : (function (a,b){
-                    return parseFloat(b["sd_ranking"]) - 
-                           parseFloat(a["sd_ranking"]);
-                }),
-            "diff_abs" : (function (a,b){
-                    return Math.abs(parseFloat(b["mean_diff"])) - 
-                           Math.abs(parseFloat(a["mean_diff"]));
-                }),
-            "diff" : (function (a,b){
-                    return parseFloat(a["diff_ranking"]) - 
-                           parseFloat(b["diff_ranking"]);
-                })
-        }
-        // for each feature there are two types of columns in the dataset: 
-        // ones that contain the values, and others which only contain a 
-        // precalculated ranking position
+			// Highlight selected boxes
+			svg.selectAll("rect.box")
+				.filter(function (d){
+					return selectedCountries.indexOf(d["country_code"]) > -1;
+				})
+				.transition()
+				.duration(1500)
+				.attr("fill", highlightColor);
 
-        // pairs the sorting keyword with the ranking column name in the dataset
-        var sortMap = {
-            "mean score" : "mean_ranking",
-            "mean math score" : "math_ranking",
-            "mean reading score" : "read_ranking",
-            "mean score (boys)" : "male_ranking",
-            "mean math score (boys)" : "male_math_ranking",
-            "mean reading score (boys)" : "male_read_ranking",
-            "mean score (girls)" : "female_ranking",
-            "mean math score (girls)" : "female_math_ranking",
-            "mean reading score (girls)" : "female_read_ranking",
-            "standard deviation of scores" : "sd_ranking",
-            "difference of mean scores between genders (absolute)" : "abs_diff_ranking",
-            "difference of mean results between genders (girls - boys)" : "diff_ranking"
-        }
+			// Highlight selected whiskers
+			svg.selectAll("line.whisker")
+				.filter(function (d){
+					return selectedCountries.indexOf(d["country_code"]) > -1;
+				})
+				.transition()
+				.duration(1500)
+				.attr("stroke", highlightColor);
 
-        //pairs the sorting keyword with the value column name in the dataset
-        var sortMap2 = {
-            "mean score" : "mean",
-            "mean math score" : "mean_math",
-            "mean reading score" : "mean_read",
-            "mean score (girls)" : "female",
-            "mean score (boys)" : "male",
-            "mean math score (girls)" : "female_math",
-            "mean math score (boys)" : "male_math",
-            "mean reading score (girls)" : "female_read",
-            "mean reading score (boys)" : "male_read",
-            "standard deviation of scores" : "sd",
-            "difference of mean scores between genders (absolute)" : "mean_diff",
-            "difference of mean results between genders (girls - boys)" : "mean_diff"
-        }
+			// Add connecting lines with svg path
+			var line = d3.svg.line()
+				.x(function (d,i) {
+					return xScale(data.indexOf(d)) + boxWidth/2;
+				})
+				.y(function (d,i) {
+					var p = selectedPercentiles[i];
+					return yScale(d[p]);
+				});
 
-        data.sort(sorter[sortKey]);
+			svg.append("path")
+				.datum(d)
+				.attr("class", "line")
+				.attr("d", line)
+				.style("stroke", "black")
+				.style("stroke-width", 2)
+				.style("fill", "none")
+				.style("stroke-dasharray", 2);
 
-        svg.selectAll("line.whisker")
-            .data(data)
-            .enter()
-            .append("line")
-            .attr("x1", function (d,i){
-                return xScale(i) + boxWidth/2;
-            })
-            .attr("y1", function (d){
-                return yScale(d["bottom"]);
-            })
-            .attr("x2", function (d,i){
-                return xScale(i) + boxWidth/2;
-            })
-            .attr("y2", function (d){
-                return yScale(d["top"]);
-            })
-            .attr("stroke-width", 1)
-            .attr("stroke", function (d){
-                return quantileColor(d["mean_quantiles"]);
-            })
-            .attr("class", function (d, i){
-                return "whisker c" + i;
-            });
+			// Add dots
+			svg.selectAll("circle")
+				.data(d)
+				.enter()
+				.append("circle")
+				.attr("cx", function (d,i){
+					//get the index of selectedCountries in the "data" array
+					return xScale(data.indexOf(d)) + boxWidth/2;
+				})
+				.attr("cy", function (d,i){
+					var p = selectedPercentiles[i];
+					return yScale(d[p]);
+				})
+				.attr("r", 3)
+				.style("fill", "white")
+				.style("stroke-width", 2)
+				.style("stroke", "black");
 
-        svg.selectAll("rect.box")
-        	.data(data)
-        	.enter()
-        	.append("rect")
-        	.attr("x", function (d,i){ 
-                return xScale(i);
-        	})
-        	.attr("y", function (d){
-        		return yScale(d["q75"]);
-        		})
-        	.attr("width", boxWidth)
-        	.attr("height", function (d){
-        		return Math.abs(yScale(d["q75"])-yScale(d["q25"]));
-        	}
-        	).attr("fill", function (d){
-        		return quantileColor(d["mean_quantiles"]);
-        	})
-            .attr("class", function (d, i){
-                // two classes, one for type of element, another for number
-                // of element
-                return "box c"+i; 
-            })
-            .attr("ID", function (d, i){
-                return i;
-            })
-            .on("mouseover", handleMouseOver)
-            .on("mouseout", handleMouseOut);
+			// Add country names
+			svg.selectAll("text.explainTag")
+				.data(d)
+				.enter()
+				.append("text")
+				.attr("class", "explainTag")
+				.attr("transform", function (d,i){
+					//var p = selectedPercentiles[i];
+					var xpos = xScale(data.indexOf(d)) + boxWidth*0.9;
+					var ypos = yScale(d["q75"]) - 5;
+					return "rotate(-90," +(xpos)+","+(ypos)+") translate(" + (xpos) +
+						"," + (ypos) + ")";
+				})
+				.text(function (d){
+					return d["country_code"];
+				})
+				.style("font-weight", "bold")
+				.style("text-transform", "uppercase")
+				.style("font-size", "0.6em")
+				.style("background-color", "white");
+		}
+		// Me queda borrar la comparacion en cuanto se use otro sorting criteria
+		// Tambien escribir un texto en la grafica
+		explain(filtered);
+
+		// We add some buttons that allow us to change the sorting.
+		d3.select(".sideDiv")
+			.append("h5")
+			.text("Try other sorting criteria:");
+
+		var buttons = d3.select(".sideDiv")
+			.append("ul")
+			.attr("class", "sortButton")
+			.selectAll("li")
+			.data(Object.keys(sortMap))
+			.enter()
+			.append("li")
+			.text(function(d) {
+				return d;
+			})
+			.style("list-style-type", "none")
+			.attr("class", "buttonText");
+
+		buttons.on("mouseover", function(d) {
+			d3.select(this)
+				.style("font-weight", "bold")
+				.style("list-style-type", "disc");
+		});
+
+		buttons.on("mouseout", function(d) {
+			d3.select(this)
+				.style("font-weight", "normal")
+				.style("list-style-type", "none");
+		});
+
+		// We define the behaviour of the buttons when clicked.
+		buttons.on("click", function(d) {
+			d3.select(".sortButton")
+				.selectAll("li")
+				.transition()
+				.duration(500)
+				.style("color", "black");
+			d3.select(this)
+				.transition()
+				.duration(500)
+				.style("color", "grey");
+			var clickedName = this.innerHTML;
+
+			// Transitions for all elements 
+			d3.selectAll(".box")
+				.transition()
+				.duration(2000)
+				.attr("x", function(d) {
+					return xScale(d[sortMap[clickedName]] - 1);
+				});
+			d3.selectAll(".whisker")
+				.transition()
+				.duration(2000)
+				.attr("x1", function(d) {
+					return xScale(d[sortMap[clickedName]] - 1) + boxWidth / 2;
+				})
+				.attr("x2", function(d) {
+					return xScale(d[sortMap[clickedName]] - 1) + boxWidth / 2;
+				});
+			d3.selectAll(".median")
+				.transition()
+				.duration(2000)
+				.attr("x1", function(d) {
+					return xScale(d[sortMap[clickedName]] - 1) + medianLinePadding;
+				})
+				.attr("x2", function(d) {
+					return xScale(d[sortMap[clickedName]] - 1) + boxWidth - medianLinePadding;
+				});
+			d3.selectAll(".countryName")
+				.transition()
+				.duration(2000)
+				.attr("x", function(d) {
+					return xScale(d[sortMap[clickedName]] - 1) + 0.7 * boxWidth;
+				})
+				// This transformation rotates again the coordinate system. 
+				.attr("transform", function(d, i) {
+					return "rotate(-90," +
+						(xScale(d[sortMap[clickedName]] - 1) + 0.7 * boxWidth) +
+						"," +
+						(height + 20) +
+						")";
+				});
+			d3.selectAll(".top,.q75,.q50,.q25,.bottom")
+				.transition()
+				.duration(2000)
+				.attr("x", function(d) {
+					return xScale(d[sortMap[clickedName]] - 1) + boxWidth;
+				})
+
+			d3.selectAll(".sortValue")
+				.transition()
+				.duration(2000)
+				.attr("x", function(d) {
+					return xScale(d[sortMap[clickedName]] - 1) + 0.7 * boxWidth;
+				})
+				.attr("transform", function(d, i) {
+					return "rotate(-90," +
+						(xScale(d[sortMap[clickedName]] - 1) + 0.7 * boxWidth) +
+						"," +
+						(height + 15) +
+						")";
+				})
+				.text(function(d) {
+					return integerFormat(d[sortMap2[clickedName]]);
+				})
+				// Highlight negative values.
+				.style("fill", function(d) {
+					if (d[sortMap2[clickedName]] < 0) {
+						return highlightColor;
+					};
+				});
+			// Change x axis title. 
+			d3.selectAll(".X").text("Ranking by " + clickedName);
+
+		});
 
 
-       	// we use the same to draw and bind the lines
-       	// note how we have to refer to line.median to avoid confusion
-       	// with the already drawn line.whisker !
-       	// we refer to line.median even though we don't assing the class name
-       	// until the end of the chain in .attr("class", "median")
-        svg.selectAll("line.median")
-        	.data(data)
-        	.enter()
-        	.append("line")
-        	.attr("x1", function (d,i){
-        		return xScale(i) + medianLinePadding;
-        	})
-        	.attr("y1", function (d){
-        		return yScale(d["q50"]);
-        	})
-        	.attr("x2", function (d,i){
-        		return xScale(i) 
-        				+ boxWidth - medianLinePadding;
-        	})
-        	.attr("y2", function (d){
-        		return yScale(d["q50"]);
-        	})
-        	.attr("stroke-width", 1)
-        	.attr("stroke", "white")
-        	.attr("class", function (d,i){
-                return "median c" + i;
-            });
-        
-        svg.selectAll("text.top")
-        	.data(data)
-        	.enter()
-        	.append("text")
-        	.attr("x", function (d,i){
-        		return xScale(i) + 1.3*boxWidth;
-        	})
-        	.attr("y", function (d){
-        		return yScale(d["top"]);
-        	})
-        	.text(function(d){
-        		return integerFormat(d["top"]);
-        	})
-        	.attr("class", function (d,i){
-                return "top c" + i;
-            })
-            .attr("visibility", "hidden");
-        
-        svg.selectAll("text.q75")
-        	.data(data)
-        	.enter()
-        	.append("text")
-        	.attr("x", function (d,i){
-        		return xScale(i) + 1.3*boxWidth;
-        	})
-        	.attr("y", function (d){
-        		return yScale(d["q75"]);
-        	})
-        	.text(function(d){
-        		return integerFormat(d["q75"]);
-        	})
-            .attr("class", function (d,i){
-                return "q75 c" + i;
-            })
-            .attr("visibility", "hidden");
-        
-        svg.selectAll("text.q50")
-        	.data(data)
-        	.enter()
-        	.append("text")
-        	.attr("x", function (d,i){
-        		return xScale(i) + 1.3*boxWidth;
-        	})
-        	.attr("y", function (d){
-        		return yScale(d["q50"]);
-        	})
-        	.text(function(d){
-        		return integerFormat(d["q50"]);
-        	})
-            .attr("class", function (d,i){
-                return "q50 c" + i;
-            })
-            .attr("visibility", "hidden");
-        
-        svg.selectAll("text.q25")
-        	.data(data)
-        	.enter()
-        	.append("text")
-        	.attr("x", function (d,i){
-        		return xScale(i) + 1.3*boxWidth;
-        	})
-        	.attr("y", function (d){
-        		return yScale(d["q25"]);
-        	})
-        	.text(function(d){
-        		return integerFormat(d["q25"]);
-        	})
-            .attr("class", function (d,i){
-                return "q25 c" + i;
-            })
-            .attr("visibility", "hidden");
-        
-        svg.selectAll("text.bottom")
-        	.data(data)
-        	.enter()
-        	.append("text")
-        	.attr("x", function (d,i){
-        		return xScale(i) + 1.3*boxWidth;
-        	})
-        	.attr("y", function (d){
-        		return yScale(d["bottom"]);
-        	})
-        	.text(function(d){
-        		return integerFormat(d["bottom"]);
-        	})
-            .attr("class", function (d,i){
-                return "bottom c" + i;
-            })
-            .attr("visibility", "hidden");
+		/** 
+		* Show numbers when hover, and lines to compare
+		* highlight country name
+		*/
 
-        svg.selectAll(".top,.q75,.q50,.q25,.bottom")
-            .style("fill",highlightColor)
-            .style("font-weight", "bold")
-            .style("font-family", "sans-serif")
-            .style("background-color", "white")
-            .style("text-shadow", "1px 0 0 #fff,-1px 0 0 #fff,0 1px 0 #fff,0 -1px 0 #fff,1px 1px #fff,-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff");
-            
+		// Mouse event handling functions. 
+		function handleMouseOver(d, i) {
+			d3.select(this).attr("fill", highlightColor);
+			var classString = ".c" + this.getAttribute("ID");
+			d3.select(".whisker" + classString)
+				.attr("stroke", highlightColor)
+				.attr("stroke-width", 2);
+			d3.select(".countryName" + classString)
+				.attr("font-weight", "bold");
 
-        svg.selectAll("text.countryName")
-        	.data(data)
-        	.enter()
-        	.append("text")
-        	.attr("x", function (d,i){
-        		return xScale(i) + 0.7*boxWidth;
-        	})
-        	.attr("y", height + 20)
-        	.text(function (d){
-        		return d["country_code"];
-        	})
-        	.attr("text-anchor", "end")
-        	.attr("transform", function (d,i){
-        		return "rotate(-90," +
-        				(xScale(i) + 0.7*boxWidth) + 
-        				"," + 
-        				(height + 20) +
-        				")";
-        	})
-        	.attr("class", function (d,i){
-                return "countryName c" + i;
-            });
+			d3.select(".top" + classString).attr("visibility", "visible");
+			d3.select(".q75" + classString).attr("visibility", "visible");
+			d3.select(".q50" + classString).attr("visibility", "visible");
+			d3.select(".q25" + classString).attr("visibility", "visible");
+			d3.select(".bottom" + classString).attr("visibility", "visible");
+			svg.append("line")
+				.attr("x1", 0)
+				.attr("y1", yScale(d["q25"]))
+				.attr("x2", width)
+				.attr("y2", yScale(d["q25"]))
+				.attr("stroke-width", 1)
+				.attr("stroke", highlightColor)
+				.attr("class", "tempQline")
+				.attr("stroke-dasharray", 2);
+			svg.append("line")
+				.attr("x1", 0)
+				.attr("y1", yScale(d["q75"]))
+				.attr("x2", width)
+				.attr("y2", yScale(d["q75"]))
+				.attr("stroke-width", 1)
+				.attr("stroke", highlightColor)
+				.attr("class", "tempQline")
+				.attr("stroke-dasharray", 2);
+		}
 
-        svg.selectAll("text.sortValue")
-            .data(data)
-            .enter()
-            .append("text")
-            .attr("x", function (d,i){
-                return xScale(i) + 0.7*boxWidth;
-            })
-            .attr("y", height + 15)
-            .text(function (d){
-                return integerFormat(d[sortKey]);
-            })
-            .attr("transform", function (d,i){
-                return "rotate(-90," +
-                        (xScale(i) + 0.7*boxWidth) + 
-                        "," + 
-                        (height + 15) +
-                        ")";
-            })
-            .attr("class", "sortValue");
-
-        // we add some buttons that allow us to change the sorting
-        d3.select(".sideDiv")
-            .append("h5")
-            .text("Try other sorting criteria:");
-
-        var buttons = d3.select(".sideDiv")
-                        .append("ul")
-                        .attr("class", "sortButton")
-                        .selectAll("li")
-                        .data(Object.keys(sortMap))
-                        .enter()
-                        .append("li")
-                        .text(function (d){
-                            return d;
-                        })
-                        .style("list-style-type", "none")
-                        .attr("class", "buttonText");
-
-        buttons.on("mouseover", function (d){
-            d3.select(this)
-                .style("font-weight", "bold")
-                .style("list-style-type", "disc");
-        });
-
-        buttons.on("mouseout", function (d){
-            d3.select(this)
-                .style("font-weight", "normal")
-                .style("list-style-type", "none");
-        });
-
-        // we define the behaviour of the buttons when clicked.
-        buttons.on("click", function (d){
-            d3.select(".sortButton")
-                .selectAll("li")
-                .transition()
-                .duration(500)
-                .style("color", "black");
-            d3.select(this)
-                .transition()
-                .duration(500)
-                //.style("background", "lightblue")
-                .style("color", "grey");
-            var clickedName = this.innerHTML;
-
-            // transitions for all elements
-            d3.selectAll(".box")
-                .transition()
-                .duration(2000)
-                .attr("x", function (d){
-                    return xScale(d[sortMap[clickedName]]-1);
-                });
-            d3.selectAll(".whisker")
-                .transition()
-                .duration(2000)
-                .attr("x1", function (d){
-                    return xScale(d[sortMap[clickedName]]-1) + boxWidth/2;
-                })
-                .attr("x2", function (d){
-                    return xScale(d[sortMap[clickedName]]-1) + boxWidth/2;
-                });
-            d3.selectAll(".median")
-                .transition()
-                .duration(2000)
-                .attr("x1", function (d){
-                    return xScale(d[sortMap[clickedName]]-1) 
-                        + medianLinePadding;
-                })
-                .attr("x2", function (d){
-                    return xScale(d[sortMap[clickedName]]-1) 
-                        + boxWidth - medianLinePadding;
-                });
-            d3.selectAll(".countryName")
-                .transition()
-                .duration(2000)
-                .attr("x", function (d){
-                    return xScale(d[sortMap[clickedName]]-1) + 0.7*boxWidth;
-                })
-                // this transformation rotates again the coordinate system
-                .attr("transform", function (d,i){
-                    return "rotate(-90," +
-                        (xScale(d[sortMap[clickedName]]-1) + 0.7*boxWidth) + 
-                        "," + 
-                        (height + 20) +
-                        ")";
-                });
-            d3.selectAll(".top,.q75,.q50,.q25,.bottom")
-                .transition()
-                .duration(2000)
-                .attr("x", function (d){
-                    return xScale(d[sortMap[clickedName]]-1) + boxWidth;
-                })
-
-            d3.selectAll(".sortValue")
-                .transition()
-                .duration(2000)
-                .attr("x", function (d){
-                    return xScale(d[sortMap[clickedName]]-1) + 0.7*boxWidth;
-                })
-                .attr("transform", function (d,i){
-                    return "rotate(-90," +
-                        (xScale(d[sortMap[clickedName]]-1) + 0.7*boxWidth) + 
-                        "," + 
-                        (height + 15) +
-                        ")";
-                })
-                .text(function (d){
-                    return integerFormat(d[sortMap2[clickedName]]);
-                })
-                // highlight negative values
-                .style("fill", function (d){
-                    if(d[sortMap2[clickedName]]<0){
-                        return highlightColor;
-                    };
-                });
-                
-            // change x axis title
-            d3.selectAll(".X").text("Ranking by "+ clickedName);
-
-        });
-        
-        // trying to change the properties of a clicked element
-        // search for "d3 tooltips"
-        // see this example! http://bl.ocks.org/Caged/6476579
-
-        // show numbers when hover, and grey lines to compare
-        // highlight country name
-        // highlight color when clicked? or slight grey background?
-        // mouse events with d3 example:
-        // http://bl.ocks.org/WilliamQLiu/76ae20060e19bf42d774
-
-        // mouse event handling functions
-            function handleMouseOver (d, i) {
-                d3.select(this).attr("fill", highlightColor);
-                var classString = ".c" + this.getAttribute("ID");
-                d3.select(".whisker" + classString)
-                    .attr("stroke", highlightColor)
-                    .attr("stroke-width", 2);
-                d3.select(".countryName" + classString)
-                    .attr("font-weight", "bold");
-
-                d3.select(".top" + classString).attr("visibility", "visible");
-                d3.select(".q75" + classString).attr("visibility", "visible");
-                d3.select(".q50" + classString).attr("visibility", "visible");
-                d3.select(".q25" + classString).attr("visibility", "visible");
-                d3.select(".bottom" + classString).attr("visibility", "visible");
-                svg.append("line")
-                    .attr("x1", 0)
-                    .attr("y1", yScale(d["q25"]))
-                    .attr("x2", width)
-                    .attr("y2", yScale(d["q25"]))
-                    .attr("stroke-width", 1)
-                    .attr("stroke", highlightColor)
-                    .attr("class", "tempQline")
-                    .attr("stroke-dasharray", 2);
-                svg.append("line")
-                    .attr("x1", 0)
-                    .attr("y1", yScale(d["q75"]))
-                    .attr("x2", width)
-                    .attr("y2", yScale(d["q75"]))
-                    .attr("stroke-width", 1)
-                    .attr("stroke", highlightColor)
-                    .attr("class", "tempQline")
-                    .attr("stroke-dasharray", 2);
-            }
-
-            function handleMouseOut (d, i) {
-                var classString = ".c" + this.getAttribute("ID");
-                d3.select(this).attr("fill", quantileColor(d["mean_quantiles"]));
-                d3.select(".whisker" + classString)
-                    .attr("stroke", quantileColor(d["mean_quantiles"]))
-                    .attr("stroke-width", 1);
-                d3.select(".countryName" + classString)
-                    .attr("font-weight", "normal");
-                //remove text labels. comma notations means .top OR .q75 OR ...
-                d3.selectAll(".top,.q75,.q50,.q25,.bottom")
-                    .attr("visibility", "hidden");
-                d3.selectAll(".tempQline").remove();
-            }
+		function handleMouseOut(d, i) {
+			var classString = ".c" + this.getAttribute("ID");
+			d3.select(this).attr("fill", quantileColor(d["mean_quantiles"]));
+			d3.select(".whisker" + classString)
+				.attr("stroke", quantileColor(d["mean_quantiles"]))
+				.attr("stroke-width", 1);
+			d3.select(".countryName" + classString)
+				.attr("font-weight", "normal");
+			// Remove text labels. comma notations means .top OR .q75 OR ...
+			d3.selectAll(".top,.q75,.q50,.q25,.bottom")
+				.attr("visibility", "hidden");
+			d3.selectAll(".tempQline").remove();
+		}
 	}
 
-	// what d3.tsv(filename, callback) returns is not the resulting object from
-	// reading the tsv table, but a request which has to be pointed to a 
-	// callback function. without the callback function it will not work!
 	d3.tsv("pisa_both.tsv", draw);
 
 	</script>
 </head>
 <body>
 	<script type="text/javascript">
-    
-    </script>
+	
+	</script>
 
 </body>
 </html>
