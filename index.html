@@ -100,6 +100,10 @@
 			margin-left: -20px;
 			text-indent: -7px;
 		}
+		.explainText{
+			font-size: 0.6em;
+			font-family: 'PT Sans', sans-serif;
+		}
 
 	</style>
 	<script type="text/javascript">
@@ -568,7 +572,7 @@
 		var filtered = data.filter(function (d){
 				return selectedCountries.indexOf(d["country_code"]) > -1;
 		});
-		console.log(filtered);
+
 		var explain = function (d){
 			var fadeDuration = 1500;
 			// Highlight selected boxes
@@ -589,15 +593,17 @@
 				.duration(fadeDuration)
 				.attr("stroke", highlightColor);
 
-			// Add connecting lines with svg path
+			/** Add connecting lines with svg path
+			* Constant y value dependent on q75 of first country
+			* Could be done with simple line, but used path in 
+			* Case functionality is extended in further revision
+			*/
+			var yVal = yScale(d[0][selectedPercentiles[0]]);
 			var line = d3.svg.line()
 				.x(function (d,i) {
 					return xScale(data.indexOf(d)) + boxWidth/2;
 				})
-				.y(function (d,i) {
-					var p = selectedPercentiles[i];
-					return yScale(d[p]);
-				});
+				.y(yVal);
 
 			svg.append("path")
 				.datum(d)
@@ -618,10 +624,7 @@
 					//get the index of selectedCountries in the "data" array
 					return xScale(data.indexOf(d)) + boxWidth/2;
 				})
-				.attr("cy", function (d,i){
-					var p = selectedPercentiles[i];
-					return yScale(d[p]);
-				})
+				.attr("cy", yVal)
 				.attr("r", 3)
 				.attr("class", "explainDots")
 				.style("fill", "white")
@@ -649,47 +652,49 @@
 				.style("font-size", "0.6em")
 				.style("opacity", 0)
 				.transition()
-				.duration(fadeDuration)
+				.duration(function (d,i){
+					return fadeDuration*i;
+				})
 				.style("opacity", 1);
+
+			// Add text narration
+			var narratorStrings = ["Remarkable student", "Median student", "Just over percentile 0.25"]
+			svg.selectAll("text.explainText")
+				.data(d)
+				.enter()
+				.append("text")
+				.attr("class", "explainText")
+				.text(function (d,i){
+					return narratorStrings[i];
+				})
+				.attr("x",function (d){
+					return xScale(data.indexOf(d)) + boxWidth/2;
+				})
+				.attr("y", height*0.13)
+				.attr("text-anchor", "middle")
+				.style("opacity", 0)
+				.transition()
+				.duration(function (d,i){
+					return fadeDuration*i;
+				})
+				.style("opacity", 1);
+				
 		}
 
 		explain(filtered);
 
+		// Another function to remove the explanatory graphics.
 		var eraseExplanation = function (d){
 			var fadeOutDuration = 100;
-			var delayTime = 10000;
+			//var delayTime = 0;
 
 			// Fade out explanatory labels
-			svg.selectAll(".explainCountryLabel,.explainPath,.explainDots")
+			svg.selectAll(".explainCountryLabel,.explainPath,.explainDots,.explainText")
 				.transition()
-				.delay(delayTime)
-				.duration(fadeOutDuration)
+				//.delay(delayTime)
+				.duration(fadeOutDuration*2)
 				.style("opacity", 0);
-
-			// Return box and whiskers to non-highlighted color.
-			svg.selectAll(".whisker")
-				.filter(function (d) {
-					return data.indexOf(d) > -1;
-				})
-				.transition()
-				.delay(delayTime)
-				.duration(fadeOutDuration*4)
-				.attr("stroke", function(d) {
-					return quantileColor(d["mean_quantiles"]);
-				});
-			var boxes = svg.selectAll(".box")
-				.filter(function (d) {
-					return data.indexOf(d) > -1;
-				})
-				.transition()
-				.delay(delayTime)
-				.duration(fadeOutDuration*4)
-				.attr("fill", function(d) {
-					return quantileColor(d["mean_quantiles"]);
-				});
-			console.log(boxes);
 		}
-		eraseExplanation(filtered);
 
 		// We add some buttons that allow us to change the sorting.
 		d3.select(".sideDiv")
@@ -724,6 +729,7 @@
 
 		// We define the behaviour of the buttons when clicked.
 		buttons.on("click", function(d) {
+			eraseExplanation(filtered);
 
 			d3.select(".sortButton")
 				.selectAll("li")
@@ -737,11 +743,15 @@
 			var clickedName = this.innerHTML;
 
 			// Transitions for all elements 
+			// Box and whiskers are returned to original color in case highlighted
 			d3.selectAll(".box")
 				.transition()
 				.duration(2000)
 				.attr("x", function(d) {
 					return xScale(d[sortMap[clickedName]] - 1);
+				})
+				.attr("fill", function(d) {
+					return quantileColor(d["mean_quantiles"]);
 				});
 			d3.selectAll(".whisker")
 				.transition()
@@ -751,6 +761,9 @@
 				})
 				.attr("x2", function(d) {
 					return xScale(d[sortMap[clickedName]] - 1) + boxWidth / 2;
+				})
+				.attr("stroke", function(d) {
+					return quantileColor(d["mean_quantiles"]);
 				});
 			d3.selectAll(".median")
 				.transition()
