@@ -131,7 +131,7 @@
 			.html("A visualization based on 50000 samples of the <a href= https://www.oecd.org/pisa/pisaproducts/pisa2012database-downloadabledata.htm>PISA 2012 dataset</a>");
 		sideDiv.append("h3")
 			.text("By GUILLERMO RAMÍREZ CAMARERO").attr("class", "authorTag");
-		sideDiv.append("p").text("The PISA test measures how 15-year-old students from around the world perform in reading and math. More important than knowing which country is first or second is knowing how far the worst performing countries lie from the top rankers. For example, a remarkable student in Romania (percentile 75) would be an average student in Denmark and close to the lowest quartile in Japan. The boxes are coloured with the intention of dividing the countries into four groups according to their mean performance in the test. In a globalized world education inequality increasingly translates into economical inequality. Aggregate data can help us grasp the big picture, but it eventually hides some interesting subtleties. Feel free to sort the countries with other criteria in order to discover how boys and girls differ in performance around the globe or which countries manage to educate top achievers without leaving too many students behind.");
+		sideDiv.append("p").text("The PISA test measures how 15-year-old students from around the world perform in reading and math. More important than knowing which country is first or second is knowing how far the worst performing countries lie from the top rankers. For example, a remarkable student in Romania (percentile 75) would be a median student in Denmark and close to the lowest quartile in Japan. The boxes are coloured with the intention of dividing the countries into four groups according to their mean performance in the test. In a globalized world education inequality increasingly translates into economical inequality. Aggregate data can help us grasp the big picture, but it eventually hides some interesting subtleties. Feel free to sort the countries with other criteria in order to discover how boys and girls differ in performance around the globe or which countries manage to educate top achievers without leaving too many students behind.");
 
 		var svg = d3.select("div.flex-container")
 			.append("svg")
@@ -570,14 +570,14 @@
 		});
 		console.log(filtered);
 		var explain = function (d){
-
+			var fadeDuration = 1500;
 			// Highlight selected boxes
 			svg.selectAll("rect.box")
 				.filter(function (d){
 					return selectedCountries.indexOf(d["country_code"]) > -1;
 				})
 				.transition()
-				.duration(1500)
+				.duration(fadeDuration)
 				.attr("fill", highlightColor);
 
 			// Highlight selected whiskers
@@ -586,7 +586,7 @@
 					return selectedCountries.indexOf(d["country_code"]) > -1;
 				})
 				.transition()
-				.duration(1500)
+				.duration(fadeDuration)
 				.attr("stroke", highlightColor);
 
 			// Add connecting lines with svg path
@@ -603,6 +603,7 @@
 				.datum(d)
 				.attr("class", "line")
 				.attr("d", line)
+				.attr("class", "explainPath")
 				.style("stroke", "black")
 				.style("stroke-width", 2)
 				.style("fill", "none")
@@ -622,16 +623,17 @@
 					return yScale(d[p]);
 				})
 				.attr("r", 3)
+				.attr("class", "explainDots")
 				.style("fill", "white")
 				.style("stroke-width", 2)
 				.style("stroke", "black");
 
-			// Add country names
+			// Add highlighted country names
 			svg.selectAll("text.explainTag")
 				.data(d)
 				.enter()
 				.append("text")
-				.attr("class", "explainTag")
+				.attr("class", "explainCountryLabel")
 				.attr("transform", function (d,i){
 					//var p = selectedPercentiles[i];
 					var xpos = xScale(data.indexOf(d)) + boxWidth*0.9;
@@ -645,11 +647,49 @@
 				.style("font-weight", "bold")
 				.style("text-transform", "uppercase")
 				.style("font-size", "0.6em")
-				.style("background-color", "white");
+				.style("opacity", 0)
+				.transition()
+				.duration(fadeDuration)
+				.style("opacity", 1);
 		}
-		// Me queda borrar la comparacion en cuanto se use otro sorting criteria
-		// Tambien escribir un texto en la grafica
+
 		explain(filtered);
+
+		var eraseExplanation = function (d){
+			var fadeOutDuration = 100;
+			var delayTime = 10000;
+
+			// Fade out explanatory labels
+			svg.selectAll(".explainCountryLabel,.explainPath,.explainDots")
+				.transition()
+				.delay(delayTime)
+				.duration(fadeOutDuration)
+				.style("opacity", 0);
+
+			// Return box and whiskers to non-highlighted color.
+			svg.selectAll(".whisker")
+				.filter(function (d) {
+					return data.indexOf(d) > -1;
+				})
+				.transition()
+				.delay(delayTime)
+				.duration(fadeOutDuration*4)
+				.attr("stroke", function(d) {
+					return quantileColor(d["mean_quantiles"]);
+				});
+			var boxes = svg.selectAll(".box")
+				.filter(function (d) {
+					return data.indexOf(d) > -1;
+				})
+				.transition()
+				.delay(delayTime)
+				.duration(fadeOutDuration*4)
+				.attr("fill", function(d) {
+					return quantileColor(d["mean_quantiles"]);
+				});
+			console.log(boxes);
+		}
+		eraseExplanation(filtered);
 
 		// We add some buttons that allow us to change the sorting.
 		d3.select(".sideDiv")
@@ -681,8 +721,10 @@
 				.style("list-style-type", "none");
 		});
 
+
 		// We define the behaviour of the buttons when clicked.
 		buttons.on("click", function(d) {
+
 			d3.select(".sortButton")
 				.selectAll("li")
 				.transition()
